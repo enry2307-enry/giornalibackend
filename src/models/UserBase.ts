@@ -234,7 +234,7 @@ export interface PublisherVerification {
   updated_at: string;
   is_deleted: boolean;
   publisher_id: string;
-  attachments: Record<string, unknown> | nul;
+  attachments: Record<string, unknown> | null;
   status: PublisherVerificationStatus;
   reason_of_failure: string;
 }
