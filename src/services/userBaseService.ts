@@ -1,24 +1,47 @@
 // services/userBaseService.ts
+import bcrypt from 'bcrypt';
+
 import { UserBaseRepository } from '../repositories/userBaseRepository';
-import { DuplicateError, NotFoundError } from '../errors/AppError';
+import { DuplicateError, NotFoundError, ValidationError } from '../errors/AppError';
+import { UserBase, UserBaseInsert } from '../types/models'; 
 
 export class UserBaseService {
   private repo = new UserBaseRepository();
 
-  async create(email: string, password: string) {
+  async create(email: string, password: string): Promise<UserBase> {
     const existing = await this.repo.findByEmail(email);
     if (existing) {
       throw new DuplicateError('Email already exists');
     }
 
-    // Create user
+    const password_hash = await bcrypt.hash(password, 10);
+
+    const user: UserBaseInsert = {
+      email,
+      password_hash
+    };
+
+    return await this.repo.create(user);
   }
 
-  async getById(id: string) {
-    const user = await this.repo.findById(id);
+  async getById(userId: string) {
+    const user = await this.repo.findById(userId);
     if (!user) {
       throw new NotFoundError('User not found');
     }
     return user;
+  }
+
+  async updatePassword(userId: string, oldPassword: string, newPassword: string): Promise<UserBase> {
+    const user = await this.getById(userId);
+
+    const valid = await bcrypt.compare(oldPassword, user.password_hash);
+    if(!valid) {
+      throw new ValidationError('Invalid password');
+    }
+
+    const password_hash = await bcrypt.hash(newPassword, 10);
+    
+    return await this.repo.update(userId, { password_hash });
   }
 }
