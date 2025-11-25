@@ -214,6 +214,7 @@ export interface UserBase {
 	password_hash: string;
 	status: UserStatus;
 }
+export type UserBaseInsert = Pick<UserBase, 'email' | 'password_hash'>;
 
 export interface UserVerification {
 	id: string;

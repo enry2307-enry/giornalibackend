@@ -1,5 +1,5 @@
 import express from 'express';
-// import anyCustomRoute from './routes/anyCUstomRoute';
+import { UserBaseRouter } from './routes/userBaseRouter';
 import { errorHandler } from './middleware/errorHandler';
 
 import helmet from 'helmet';
@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(helmet());
 
 // Routes
-// app.use('/any/custom/path/route', anyCustomRoute);
+app.use('UserBase', UserBaseRouter);
 
 // Global error handler (should be after routes)
 app.use(errorHandler);

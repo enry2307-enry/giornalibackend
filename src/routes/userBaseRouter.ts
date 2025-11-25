@@ -1,7 +1,10 @@
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
+import { UserBaseRegister } from '../controllers/userBaseController'; 
 
 const UserBaseRouter = Router();
 
-UserBaseRouter.get('/', (req: Request, res: Response): void => {
-  res.send('User Base Route');
+UserBaseRouter.post('/register', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  await UserBaseRegister(req, res, next);  
 });
+
+export { UserBaseRouter };
