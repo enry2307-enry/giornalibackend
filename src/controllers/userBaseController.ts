@@ -28,10 +28,10 @@ export const UserBaseRegister = async (req: Request, res: Response, next: NextFu
     if(!req.body.password) {
       throw new ValidationError("Password required");
     }
-    if(!req.body.password_check) {
+    if(!req.body.passwordConfirmation ) {
       throw new ValidationError("Password Check required");
     }
-    if(req.body.password !== req.body.password_check) {
+    if(req.body.password !== req.body.passwordConfirmation ) {
       throw new ValidationError('Passwords don\'t match');
     }
 
