@@ -1,10 +1,11 @@
 // services/viewerService.ts
+import bcrypt from 'bcrypt';
 
 import { ViewerRepository } from '../repositories/viewerRepository';
 import { UserBaseRepository } from '../repositories/userBaseRepository';
 
-import { ViewerInsert } from '../types/models';
-import { DuplicateError, NotFoundError, ValidationError } from '../errors/AppError';
+import { Viewer, ViewerInsert } from '../types/models';
+import { DuplicateError, NotFoundError, ValidationError, ForbiddenError } from '../errors/AppError';
 
 export class ViewerService {
   private viewerRepo = new ViewerRepository();
@@ -34,5 +35,42 @@ export class ViewerService {
     };
 
     return await this.viewerRepo.create(newViewer);
+  }
+
+  async getByUsername(username: string): Promise<Viewer | null> {
+    return await this.viewerRepo.getByUsername(username);
+  }
+
+  async getByUserId(userId: string): Promise<Viewer | null> {
+    return await this.viewerRepo.getByUserId(userId);
+  }
+
+  async getById(viewerId: string): Promise<Viewer | null> {
+    return await this.viewerRepo.findById(viewerId);
+  }
+
+  async softDelete(viewerId: string, userId: string, user_password: string): Promise<Viewer> {
+    const user = await this.userBaseRepo.findById(userId);
+    if(!user) {
+      throw new NotFoundError("User not found");
+    }
+
+    const viewer = await this.viewerRepo.findById(viewerId);
+    if(!viewer) {
+      throw new NotFoundError("Viewer not found");
+    }
+
+    if (viewer.user_id !== userId) {
+      throw new ForbiddenError("You don't have permission to delete this viewer");
+    }
+
+    const validPassword = await bcrypt.compare(user_password, user.password_hash);
+    if (!validPassword) {
+      throw new ValidationError("Wrong password");
+    }
+
+    await this.viewerRepo.softDelete(viewerId);
+
+    return viewer;
   }
 }

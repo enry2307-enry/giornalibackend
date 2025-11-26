@@ -14,11 +14,14 @@ export const UserBaseList = async (req: Request, res: Response, next: NextFuncti
 
 export const UserBaseGetById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
+    // TODO: After auth implementation, get from JWT token
+    // const userId = req.user.id;
+
     if(!req.body.userId) {
-      throw new ValidationError("UserId required");
+      throw new ValidationError("UserId required");  // remove this when JWT implemented
     }
 
-    const user = await userBaseService.getById(req.body.userId);
+    const user = await userBaseService.getById(req.body.userId);  // change parameter when JWT implemented
 
     res.status(200).json({ user })
   } catch (error) {
@@ -69,8 +72,11 @@ export const UserBaseRegister = async (req: Request, res: Response, next: NextFu
 
 export const UserBaseUpdatePassword = async(req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
+    // TODO: After auth implementation, get from JWT token
+    // const userId = req.user.id;
+
     if(!req.body.userId) {
-      throw new ValidationError("UserId required");
+      throw new ValidationError("UserId required"); // remove this when JWT implemented
     }
     if(!req.body.oldPassword) {
       throw new ValidationError("Old Password required");
@@ -86,7 +92,7 @@ export const UserBaseUpdatePassword = async(req: Request, res: Response, next: N
     }
 
     const user = await userBaseService.updatePassword(
-      req.body.userId, 
+      req.body.userId, // change this to userId when JWT implemented
       req.body.oldPassword,
       req.body.newPassword
     );
@@ -100,15 +106,18 @@ export const UserBaseUpdatePassword = async(req: Request, res: Response, next: N
 
 export const UserBaseSoftDelete = async(req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
+    // TODO: After auth implementation, get from JWT token
+    // const userId = req.user.id;
+
     if(!req.body.userId) {
-      throw new ValidationError("UserId required");
+      throw new ValidationError("UserId required"); // remove this when JWT implemented
     }
     if(!req.body.password) {
       throw new ValidationError("Password required");
     }
 
     const user = await userBaseService.softDelete(
-      req.body.userId,
+      req.body.userId,  // change this to userId when JWT implemented
       req.body.password
     );
 

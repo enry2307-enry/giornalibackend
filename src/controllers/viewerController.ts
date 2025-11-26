@@ -26,3 +26,32 @@ export const ViewerCreate = async (req: Request, res: Response, next: NextFuncti
     next(error);
   }
 }
+
+export const ViewerSoftDelete = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+
+    // TODO: After auth implementation, get from JWT token
+    // const userId = req.user.id;
+
+    if(!req.params.viewerId) {
+      throw new ValidationError("ViewerId required");
+    }
+    if(!req.body.userId) {
+      throw new ValidationError("UserId required"); // Remove this after JWT
+    }
+    if(!req.body.password) {
+      throw new ValidationError("Password required");
+    }
+
+    const viewer = await viewerService.softDelete(
+      req.params.viewerId,
+      req.body.userId,
+      req.body.password
+    );
+
+    res.status(200).json({ viewer });
+
+  } catch (error) {
+    next(error);
+  }
+}
