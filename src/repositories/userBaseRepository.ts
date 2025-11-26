@@ -9,7 +9,7 @@ export class UserBaseRepository extends BaseRepository<UserBase> {
   async findByEmail(email: string): Promise<UserBase | null> {
     const { data, error } = await supabase
       .from(this.tableName)
-      .select('*')
+      .select('id, email, created_at, updated_at, status')
       .eq('email', email)
       .eq('is_deleted', false)
       .single();

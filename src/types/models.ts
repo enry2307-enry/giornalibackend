@@ -234,7 +234,7 @@ export interface Viewer {
 	is_deleted: boolean;
 	user_id: string; // FK UserBase
 	username: string;
-	description: string | null;
-	profile_image_url: string | null;
+	description?: string | null;
+	profile_image_url?: string | null;
 }
-
+export type ViewerInsert = Pick<Viewer, 'user_id' | 'username' | 'description' | 'profile_image_url'>

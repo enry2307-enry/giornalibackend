@@ -12,9 +12,29 @@ export const UserBaseList = async (req: Request, res: Response, next: NextFuncti
   }
 }
 
-export const UserBaseDetail = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const UserBaseGetById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    res.send('NOT IMPLEMENTED: UserBase detail: ' + req.params.id);
+    if(!req.body.userId) {
+      throw new ValidationError("UserId required");
+    }
+
+    const user = await userBaseService.getById(req.body.userId);
+
+    res.status(200).json({ user })
+  } catch (error) {
+    next(error);
+  }
+}
+
+export const UserBaseGetByEmail = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    if(!req.body.email) {
+      throw new ValidationError("Email required");
+    }
+
+    const user = await userBaseService.getById(req.body.email);
+
+    res.status(200).json({ user })
   } catch (error) {
     next(error);
   }
@@ -29,10 +49,10 @@ export const UserBaseRegister = async (req: Request, res: Response, next: NextFu
       throw new ValidationError("Password required");
     }
     if(!req.body.passwordConfirmation ) {
-      throw new ValidationError("Password Check required");
+      throw new ValidationError("Password Confirmation required");
     }
     if(req.body.password !== req.body.passwordConfirmation ) {
-      throw new ValidationError('Passwords don\'t match');
+      throw new ValidationError("Passwords don't match");
     }
 
     const user = await userBaseService.create(
@@ -41,6 +61,58 @@ export const UserBaseRegister = async (req: Request, res: Response, next: NextFu
     );
 
     res.status(201).json({ user });
+
+  } catch (error) {
+    next(error);
+  }
+}
+
+export const UserBaseUpdatePassword = async(req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    if(!req.body.userId) {
+      throw new ValidationError("UserId required");
+    }
+    if(!req.body.oldPassword) {
+      throw new ValidationError("Old Password required");
+    }
+    if(!req.body.newPassword) {
+      throw new ValidationError("New Password required");
+    }
+    if(!req.body.newPasswordConfirmation) {
+      throw new ValidationError("New Password Confirmation required");
+    }
+    if(req.body.newPasword !== req.body.newPasswordConfirmation) {
+      throw new ValidationError("Passwords don't match");
+    }
+
+    const user = await userBaseService.updatePassword(
+      req.body.userId, 
+      req.body.oldPassword,
+      req.body.newPassword
+    );
+
+    res.status(200).json({ user });
+
+  } catch (error) {
+    next(error);
+  }
+}
+
+export const UserBaseSoftDelete = async(req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    if(!req.body.userId) {
+      throw new ValidationError("UserId required");
+    }
+    if(!req.body.password) {
+      throw new ValidationError("Password required");
+    }
+
+    const user = await userBaseService.softDelete(
+      req.body.userId,
+      req.body.password
+    );
+
+    res.status(200).json({ user });
 
   } catch (error) {
     next(error);

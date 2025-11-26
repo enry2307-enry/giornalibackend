@@ -32,6 +32,14 @@ export class UserBaseService {
     return user;
   }
 
+  async getByEmail(email: string) {
+    const user = await this.repo.findByEmail(email);
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+    return user;
+  }
+
   async updatePassword(userId: string, oldPassword: string, newPassword: string): Promise<UserBase> {
     const user = await this.getById(userId);
 
@@ -43,5 +51,19 @@ export class UserBaseService {
     const password_hash = await bcrypt.hash(newPassword, 10);
     
     return await this.repo.update(userId, { password_hash });
+  }
+
+  async softDelete(userId: string, password: string): Promise<void> {
+    const user = await this.repo.findById(userId);
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+
+    const valid = await bcrypt.compare(password, user.password_hash);
+    if (!valid) {
+      throw new ValidationError('Invalid password');
+    }
+
+    await this.repo.softDelete(userId);
   }
 }

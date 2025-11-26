@@ -4,26 +4,52 @@ import supabase from '../config/supabase';
 export abstract class BaseRepository<T> {
   protected abstract tableName: string;
 
-  async findAll(): Promise<T[]> {
+  async findAll(selectFields: string[] = ['*']): Promise<T[]> {
+    const selectString = selectFields.join(',');
+
     const { data, error } = await supabase
       .from(this.tableName)
-      .select('*')
+      .select(selectString)
       .eq('is_deleted', false);
     
     if (error) throw error;
     return data as T[];
   }
 
-  async findById(id: string): Promise<T | null> {
+  async findById(id: string, selectFields: string[] = ['*']): Promise<T | null> {
+    const selectString = selectFields.join(',');
+
     const { data, error } = await supabase
       .from(this.tableName)
-      .select('*')
+      .select(selectString)
       .eq('id', id)
       .eq('is_deleted', false)
       .single();
     
     if (error) throw error;
     return data as T | null;
+  }
+
+  async findByField(
+    field: string, 
+    value: string | number | boolean, 
+    selectFields: string[] = ['*']
+  ): Promise<T | null> {
+    const selectString = selectFields.join(',');
+    
+    const { data, error } = await supabase
+      .from(this.tableName)
+      .select(selectString)
+      .eq(field, value)
+      .eq('is_deleted', false)
+      .single();
+    
+    if (error) {
+      if (error.code === 'PGRST116') return null;
+      throw error;
+    }
+    
+    return data as T;
   }
 
   async create(item: Partial<T>): Promise<T> {

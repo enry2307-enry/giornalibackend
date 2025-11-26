@@ -1,10 +1,12 @@
-import { Router, Request, Response, NextFunction } from 'express';
-import { UserBaseRegister } from '../controllers/userBaseController'; 
+import { Router } from 'express';
+import { UserBaseRegister, UserBaseUpdatePassword, UserBaseGetById } from '../controllers/userBaseController'; 
 
 const UserBaseRouter = Router();
 
-UserBaseRouter.post('/register', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  await UserBaseRegister(req, res, next);  
-});
+UserBaseRouter.post('/register', UserBaseRegister);
+
+UserBaseRouter.post('/change-password', UserBaseUpdatePassword);
+
+UserBaseRouter.get('/:userId/details', UserBaseGetById);
 
 export { UserBaseRouter };
