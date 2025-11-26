@@ -49,6 +49,23 @@ export class ViewerService {
     return await this.viewerRepo.findById(viewerId);
   }
 
+  async update(
+  userId: string, 
+  viewerId: string,
+  updates: Partial<Pick<Viewer, 'description' | 'profile_image_url'>>
+  ) {
+    const viewer = await this.viewerRepo.findById(viewerId);
+    if (!viewer) {
+      throw new NotFoundError("Viewer not found");
+    }
+
+    if (viewer.user_id !== userId) {
+      throw new ForbiddenError("You don't have permission to update this viewer");
+    }
+
+    return await this.viewerRepo.update(viewerId, updates);
+  }
+
   async softDelete(viewerId: string, userId: string, user_password: string): Promise<Viewer> {
     const user = await this.userBaseRepo.findById(userId);
     if(!user) {
