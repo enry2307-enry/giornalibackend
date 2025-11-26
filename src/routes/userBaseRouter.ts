@@ -1,12 +1,21 @@
 import { Router } from 'express';
-import { UserBaseRegister, UserBaseUpdatePassword, UserBaseGetById } from '../controllers/userBaseController'; 
+import { 
+  UserBaseRegister, 
+  UserBaseUpdatePassword, 
+  UserBaseGetById,
+  UserBaseSoftDelete
+} from '../controllers/userBaseController';
 
 const UserBaseRouter = Router();
 
-UserBaseRouter.post('/register', UserBaseRegister);
+// TO DO
+// When JWT is implemented, remove the :userId param from URL
+// Since userId will be taken from authentication
 
-UserBaseRouter.post('/change-password', UserBaseUpdatePassword);
-
-UserBaseRouter.get('/:userId/details', UserBaseGetById);
+// RESTful patterns
+UserBaseRouter.post('/register', UserBaseRegister);              // POST /userbase/register
+UserBaseRouter.put('/:userId/password', UserBaseUpdatePassword); // PUT /userbase/:userId/password
+UserBaseRouter.delete('/:userId', UserBaseSoftDelete);           // DELETE /userbase/:userId
+UserBaseRouter.get('/:userId', UserBaseGetById);                 // GET /userbase/:userId
 
 export { UserBaseRouter };

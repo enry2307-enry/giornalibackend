@@ -17,13 +17,13 @@ export const UserBaseGetById = async (req: Request, res: Response, next: NextFun
     // TODO: After auth implementation, get from JWT token
     // const userId = req.user.id;
 
-    if(!req.body.userId) {
+    if(!req.params.userId) {
       throw new ValidationError("UserId required");  // remove this when JWT implemented
     }
 
-    const user = await userBaseService.getById(req.body.userId);  // change parameter when JWT implemented
+    const user = await userBaseService.getById(req.params.userId);  // change parameter when JWT implemented
 
-    res.status(200).json({ user })
+    res.status(200).json({ user });
   } catch (error) {
     next(error);
   }
