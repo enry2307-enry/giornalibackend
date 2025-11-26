@@ -75,7 +75,7 @@ export const UserBaseUpdatePassword = async(req: Request, res: Response, next: N
     // TODO: After auth implementation, get from JWT token
     // const userId = req.user.id;
 
-    if(!req.body.userId) {
+    if(!req.params.userId) {
       throw new ValidationError("UserId required"); // remove this when JWT implemented
     }
     if(!req.body.oldPassword) {
@@ -92,7 +92,7 @@ export const UserBaseUpdatePassword = async(req: Request, res: Response, next: N
     }
 
     const user = await userBaseService.updatePassword(
-      req.body.userId, // change this to userId when JWT implemented
+      req.params.userId, // change this to userId when JWT implemented
       req.body.oldPassword,
       req.body.newPassword
     );
@@ -109,7 +109,7 @@ export const UserBaseSoftDelete = async(req: Request, res: Response, next: NextF
     // TODO: After auth implementation, get from JWT token
     // const userId = req.user.id;
 
-    if(!req.body.userId) {
+    if(!req.params.userId) {
       throw new ValidationError("UserId required"); // remove this when JWT implemented
     }
     if(!req.body.password) {
@@ -117,7 +117,7 @@ export const UserBaseSoftDelete = async(req: Request, res: Response, next: NextF
     }
 
     const user = await userBaseService.softDelete(
-      req.body.userId,  // change this to userId when JWT implemented
+      req.params.userId,  // change this to userId when JWT implemented
       req.body.password
     );
 
