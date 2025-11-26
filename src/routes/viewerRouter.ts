@@ -3,6 +3,6 @@ import { ViewerCreate } from '../controllers/viewerController';
 
 const ViewerRouter = Router();
 
-ViewerRouter.post('/create', ViewerCreate);
+ViewerRouter.post('/:viewerId/create', ViewerCreate);
 
 export { ViewerRouter };
