@@ -87,7 +87,7 @@ export const UserBaseUpdatePassword = async(req: Request, res: Response, next: N
     if(!req.body.newPasswordConfirmation) {
       throw new ValidationError("New Password Confirmation required");
     }
-    if(req.body.newPasword !== req.body.newPasswordConfirmation) {
+    if(req.body.newPassword !== req.body.newPasswordConfirmation) {
       throw new ValidationError("Passwords don't match");
     }
 

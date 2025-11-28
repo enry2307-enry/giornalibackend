@@ -3,9 +3,14 @@ import supabase from '../config/supabase';
 
 export abstract class BaseRepository<T> {
   protected abstract tableName: string;
+  protected defaultSelectFields: string = '*'; // Override in child repos
 
-  async findAll(selectFields: string[] = ['*']): Promise<T[]> {
-    const selectString = selectFields.join(',');
+  async findAll(selectFields?: string[]): Promise<T[]> {
+
+    const selectString =
+      selectFields && selectFields.length > 0
+        ? selectFields.join(',')
+        : this.defaultSelectFields;
 
     const { data, error } = await supabase
       .from(this.tableName)
@@ -16,8 +21,12 @@ export abstract class BaseRepository<T> {
     return data as T[];
   }
 
-  async findById(id: string, selectFields: string[] = ['*']): Promise<T | null> {
-    const selectString = selectFields.join(',');
+  async findById(id: string, selectFields?: string[]): Promise<T | null> {
+    
+    const selectString =
+      selectFields && selectFields.length > 0
+        ? selectFields.join(',')
+        : this.defaultSelectFields;
 
     const { data, error } = await supabase
       .from(this.tableName)
@@ -25,18 +34,26 @@ export abstract class BaseRepository<T> {
       .eq('id', id)
       .eq('is_deleted', false)
       .single();
-    
-    if (error) throw error;
-    return data as T | null;
+
+    if (error) {
+      if (error.code === 'PGRST116') return null;
+      throw error;
+    }
+
+    return data as unknown as T | null;
   }
 
   async findByField(
     field: string, 
     value: string | number | boolean, 
-    selectFields: string[] = ['*']
+    selectFields?: string[]
   ): Promise<T | null> {
-    const selectString = selectFields.join(',');
-    
+
+    const selectString =
+      selectFields && selectFields.length > 0
+        ? selectFields.join(',')
+        : this.defaultSelectFields;
+
     const { data, error } = await supabase
       .from(this.tableName)
       .select(selectString)
@@ -49,7 +66,7 @@ export abstract class BaseRepository<T> {
       throw error;
     }
     
-    return data as T;
+    return data as unknown as T | null;
   }
 
   async create(item: Partial<T>): Promise<T> {
@@ -60,7 +77,7 @@ export abstract class BaseRepository<T> {
       .single();
     
     if (error) throw error;
-    return data as T;
+    return data as unknown as T;
   }
 
   async update(id: string, item: Partial<T>): Promise<T> {
@@ -72,7 +89,7 @@ export abstract class BaseRepository<T> {
       .single();
     
     if (error) throw error;
-    return data as T;
+    return data as unknown as T;
   }
 
   async softDelete(id: string): Promise<void> {

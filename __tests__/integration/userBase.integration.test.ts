@@ -1,16 +1,15 @@
 // __tests__/integration/userBase.integration.test.ts
 import request from 'supertest';
-import app from '../../app';
-import supabase from '../../config/supabase';
+import app from '../../src/app';
+import supabase from '../../src/config/supabase';
 
 describe('UserBase API Integration Tests', () => {
-  
-  // Clean up test data after each test
+
   afterEach(async () => {
     await supabase
-      .from('user_base')
+      .from('userbase')
       .delete()
-      .eq('email', 'test@test.com');
+      .eq('email', 'test@test.com')
   });
 
   describe('POST /userbase/register', () => {
@@ -20,7 +19,7 @@ describe('UserBase API Integration Tests', () => {
         .send({
           email: 'test@test.com',
           password: 'password123',
-          password_check: 'password123'
+          passwordConfirmation: 'password123'
         });
 
       expect(res.status).toBe(201);
@@ -36,7 +35,7 @@ describe('UserBase API Integration Tests', () => {
         .send({
           email: 'test@test.com',
           password: 'password123',
-          password_check: 'password123'
+          passwordConfirmation: 'password123'
         });
 
       // Try to create duplicate
@@ -45,7 +44,7 @@ describe('UserBase API Integration Tests', () => {
         .send({
           email: 'test@test.com',
           password: 'password456',
-          password_check: 'password456'
+          passwordConfirmation: 'password456'
         });
 
       expect(res.status).toBe(409);
@@ -58,7 +57,7 @@ describe('UserBase API Integration Tests', () => {
         .send({
           email: 'test@test.com',
           password: 'password123',
-          password_check: 'password456'
+          passwordConfirmation: 'password456'
         });
 
       expect(res.status).toBe(400);
@@ -87,7 +86,7 @@ describe('UserBase API Integration Tests', () => {
         .send({
           email: 'test@test.com',
           password: 'password123',
-          password_check: 'password123'
+          passwordConfirmation: 'password123'
         });
       userId = res.body.user.id;
     });
@@ -122,7 +121,7 @@ describe('UserBase API Integration Tests', () => {
         .send({
           email: 'test@test.com',
           password: 'password123',
-          password_check: 'password123'
+          passwordConfirmation: 'password123'
         });
       userId = res.body.user.id;
     });
@@ -132,11 +131,13 @@ describe('UserBase API Integration Tests', () => {
         .put(`/userbase/${userId}/password`)
         .send({
           oldPassword: 'password123',
-          newPassword: 'newpassword456'
+          newPassword: 'newpassword456',
+          newPasswordConfirmation: 'newpassword456'
         });
 
       expect(res.status).toBe(200);
       expect(res.body.user.id).toBe(userId);
+      expect(res.body.user).not.toHaveProperty('password_hash');
     });
 
     it('should fail with incorrect old password', async () => {
@@ -144,7 +145,8 @@ describe('UserBase API Integration Tests', () => {
         .put(`/userbase/${userId}/password`)
         .send({
           oldPassword: 'wrongpassword',
-          newPassword: 'newpassword456'
+          newPassword: 'newpassword456',
+          newPasswordConfirmation: 'newpassword456'
         });
 
       expect(res.status).toBe(400);
@@ -156,7 +158,8 @@ describe('UserBase API Integration Tests', () => {
         .put('/userbase/00000000-0000-0000-0000-000000000000/password')
         .send({
           oldPassword: 'password123',
-          newPassword: 'newpassword456'
+          newPassword: 'newpassword456',
+          newPasswordConfirmation: 'newpassword456'
         });
 
       expect(res.status).toBe(404);
@@ -173,7 +176,7 @@ describe('UserBase API Integration Tests', () => {
         .send({
           email: 'test@test.com',
           password: 'password123',
-          password_check: 'password123'
+          passwordConfirmation: 'password123'
         });
       userId = res.body.user.id;
     });
@@ -182,7 +185,8 @@ describe('UserBase API Integration Tests', () => {
       const res = await request(app)
         .delete(`/userbase/${userId}`)
         .send({
-          password: 'password123'
+          password: 'password123',
+          passwordConfirmation: 'password123'
         });
 
       expect(res.status).toBe(200);

@@ -41,7 +41,11 @@ export class UserBaseService {
   }
 
   async updatePassword(userId: string, oldPassword: string, newPassword: string): Promise<UserBase> {
-    const user = await this.getById(userId);
+    const user = await this.repo.findById(userId, ['password_hash']);
+
+    if(!user) {
+      throw new NotFoundError("User not found")
+    }
 
     const valid = await bcrypt.compare(oldPassword, user.password_hash);
     if(!valid) {
@@ -54,7 +58,7 @@ export class UserBaseService {
   }
 
   async softDelete(userId: string, password: string): Promise<void> {
-    const user = await this.repo.findById(userId);
+    const user = await this.repo.findById(userId, ['password_hash']);
     if (!user) {
       throw new NotFoundError('User not found');
     }
