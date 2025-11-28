@@ -27,6 +27,11 @@ export class ViewerService {
       throw new NotFoundError("User does not exist");
     }
 
+    const existingViewerWithSameUserId = await this.viewerRepo.findByField('user_id', userId, ['id']);
+    if(existingViewerWithSameUserId) {
+      throw new DuplicateError("Viewer with this UserId already exists");
+    }
+
     const newViewer: ViewerInsert = {
       user_id: userId,
       username,

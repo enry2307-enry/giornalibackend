@@ -17,8 +17,8 @@ export const ViewerCreate = async (req: Request, res: Response, next: NextFuncti
     const viewer = await viewerService.create(
       req.body.userId, 
       req.body.username,
-      req.body.description || '',
-      req.body.profile_image_url || ''
+      req.body.description || null,
+      req.body.profile_image_url || null
     );
 
     res.status(201).json({ viewer });
