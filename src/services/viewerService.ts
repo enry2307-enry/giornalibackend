@@ -64,6 +64,11 @@ export class ViewerService {
       throw new NotFoundError("Viewer not found");
     }
 
+    const user = await this.userBaseRepo.findById(userId);
+    if(!user) {
+      throw new NotFoundError("User not found");
+    }
+
     if (viewer.user_id !== userId) {
       throw new ForbiddenError("You don't have permission to update this viewer");
     }

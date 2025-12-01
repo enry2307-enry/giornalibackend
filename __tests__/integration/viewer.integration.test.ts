@@ -146,4 +146,243 @@ describe('Viewer API Integration Tests', () => {
       expect(res.body.code).toBe('NOT_FOUND');
     })
   });
+
+  describe('GET viewer/:viewerId', () => {
+    let viewerId: string;
+
+    beforeEach(async () => {
+      // Create a user for testing
+      const res = await request(app)
+        .post('/userbase/register')
+        .send({
+          email: 'test@test.com',
+          password: 'password123',
+          passwordConfirmation: 'password123'
+        });
+
+      //Create a viewer for testing
+      const res1 = await request(app)
+        .post('/viewer')
+        .send({
+          userId: res.body.user.id,
+          username: 'test_username'
+        });
+
+      viewerId = res1.body.viewer.id;
+    });
+
+    it('should retrieve viewer successfully', async () => {
+      const res = await request(app)
+        .get(`/viewer/${viewerId}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.viewer.id).toBe(viewerId);
+      expect(res.body.viewer.username).toBe('test_username');
+    });
+
+    it('should fail to retrieve non existing viewer', async () => {
+      const res = await request(app)
+        .get('/viewer/00000000-0000-0000-0000-000000000000');
+
+      expect(res.status).toBe(200);
+      expect(res.body.viewer).toBe(null);
+    });
+  });
+
+  describe('PUT /viewer/:viewerId', () => {
+    let userId: string;
+    let viewerId: string;
+
+    beforeEach(async () => {
+      // Create a user for testing
+      const userRes = await request(app)
+        .post('/userbase/register')
+        .send({
+          email: 'test@test.com',
+          password: 'password123',
+          passwordConfirmation: 'password123'
+        });
+
+      userId = userRes.body.user.id;
+
+      //Create a viewer for testing
+      const viewerRes = await request(app)
+        .post('/viewer')
+        .send({
+          userId: userId,
+          username: 'test_username'
+        });
+
+      viewerId = viewerRes.body.viewer.id;
+    });
+
+    it('should successfully add description to viewer', async () => {
+      const res = await request(app)
+        .put(`/viewer/${viewerId}`)
+        .send({
+          userId: userId,
+          description: 'test_description'
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty('viewer');
+      expect(res.body.viewer.id).toBe(viewerId);
+      expect(res.body.viewer).toHaveProperty('description');
+      expect(res.body.viewer.description).toBe('test_description');
+    });
+
+    it('shouldn\'t update viewer with unexisting provided userId', async () => {
+      const res = await request(app)
+      .put(`/viewer/${viewerId}`)
+      .send({
+        userId: '00000000-0000-0000-0000-000000000000',
+        description: 'test_description'
+      });
+
+      expect(res.status).toBe(404);
+    });
+
+    it('should fail to update viewer with userId of another user', async () => {
+      
+      // Creating another user to use its userId to update another
+      // viewer
+      // Should result in FORBIDDEN
+      const userRes = await request(app)
+        .post('/userbase/register')
+        .send({
+          email: 'test1@test.com',
+          password: 'password456',
+          passwordConfirmation: 'password456'
+        })
+
+      const otherUserId = userRes.body.user.id;
+
+      const res = await request(app)
+        .put(`/viewer/${viewerId}`)
+        .send({
+          userId: otherUserId,
+          description: 'test_description'
+        })
+
+      expect(res.status).toBe(403);
+      expect(res.body.code).toBe('FORBIDDEN_ERROR');
+    });
+
+    it('should raise validation error when no fields to update are provided', async () => {
+      const res = await request(app)
+        .put(`/viewer/${viewerId}`)
+        .send({
+          userId: userId
+        })
+
+      expect(res.status).toBe(400);
+      expect(res.body.code).toBe('VALIDATION_ERROR')
+    });
+  });
+
+  describe('DELETE /viewer/:viewerId', () => {
+    let userId: string;
+    let viewerId: string;
+
+    beforeEach(async () => {
+      // Create a user for testing
+      const userRes = await request(app)
+        .post('/userbase/register')
+        .send({
+          email: 'test@test.com',
+          password: 'password123',
+          passwordConfirmation: 'password123'
+        });
+
+      userId = userRes.body.user.id;
+
+      //Create a viewer for testing
+      const viewerRes = await request(app)
+        .post('/viewer')
+        .send({
+          userId: userId,
+          username: 'test_username'
+        });
+
+      viewerId = viewerRes.body.viewer.id;
+    });
+
+    it('should successfully soft delete viewer', async () => {
+      const res = await request(app)
+        .delete(`/viewer/${viewerId}`)
+        .send({
+          userId,
+          password: 'password123',
+          passwordConfirmation:'password123'
+        });
+
+      const fetchRes = await request(app)
+        .get(`/viewer/${res.body.viewer.id}`)
+      
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty('viewer');
+
+      // This test shouldn't actually be here
+      // But for now it is the best place to put it into
+      expect(fetchRes.status).toBe(404);
+    });
+
+    it('should fail to delete user if passwords don\'t match', async () => {
+      const res = await request(app)
+        .delete(`/viewer/${viewerId}`)
+        .send({
+          userId: userId,
+          password: 'password123',
+          passwordConfirmation: 'password456'
+        })
+
+      expect(res.status).toBe(400);
+    });
+
+    it('should fail to delete user if password is wrong', async () => {
+      const res = await request(app)
+        .delete(`/viewer/${viewerId}`)
+        .send({
+          userId: userId,
+          password: 'password456',
+          passwordConfirmation: 'password456'
+        })
+
+      expect(res.status).toBe(400);
+      expect(res.body.code).toBe('VALIDATION_ERROR')
+      expect(res.body.message).toBe('Wrong password');
+    });
+
+    it('should fail to delete user if another viewer\'s userId is provided', async () => {
+      // Create another user
+      const userRes = await request(app)
+        .post('/userbase/register')
+        .send({
+          email: 'test@test.com',
+          password: 'password123',
+          passwordConfirmation: 'password123'
+        });
+
+      const userId1 = userRes.body.user.id;
+
+      //Create another viewer for testing
+      await request(app)
+        .post('/viewer')
+        .send({
+          userId: userId1,
+          username: 'test_username_2'
+        });
+        
+
+      const res = await request(app)
+        .delete(`/viewer/${viewerId}`)
+        .send({
+          userId: userId1,
+          password: 'password123',
+          passwordConfirmation: 'password123'
+        });
+
+      expect(res.status).toBe(403);
+    });
+  });
 });

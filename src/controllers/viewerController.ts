@@ -43,10 +43,17 @@ export const ViewerSoftDelete = async (req: Request, res: Response, next: NextFu
     if(!req.body.password) {
       throw new ValidationError("Password required");
     }
+    if(!req.body.passwordConfirmation) {
+      throw new ValidationError("Password confirmation required");
+    }
+
+    if(req.body.password !== req.body.passwordConfirmation) {
+      throw new ValidationError("Passwords don't match");
+    }
 
     const viewer = await viewerService.softDelete(
       req.params.viewerId,
-      req.body.userId,
+      req.body.userId,  // this will be removed when JWT implemented
       req.body.password
     );
 
