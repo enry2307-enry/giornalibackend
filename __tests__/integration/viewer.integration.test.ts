@@ -3,10 +3,10 @@ import request from 'supertest';
 import app from '../../src/app';
 import supabase from '../../src/config/supabase';
 
-describe('Viewer API Intergation Tests', () => {
+describe('Viewer API Integration Tests', () => {
   
   // cleanup
-  beforeEach(async () => {
+  afterEach(async () => {
     await supabase
       .from('viewer')
       .delete()
@@ -104,31 +104,46 @@ describe('Viewer API Intergation Tests', () => {
       expect(res.status).toBe(409);
       expect(res.body.code).toBe('DUPLICATE_ENTRY');
     })
+  });
 
-    describe('GET viewer/me/:userId', () => {
-      let userId: string; 
-      
-      beforeEach(async () => {
-        // Create a user for testing
-        const res = await request(app)
-          .post('/userbase/register')
-          .send({
-            email: 'test@test.com',
-            password: 'password123',
-            passwordConfirmation: 'password123'
-          });
-        userId = res.body.user.id;
-      });
+  describe('GET viewer/me/:userId', () => {
+    let userId: string; 
+    
+    beforeEach(async () => {
+      // Create a user for testing
+      const res = await request(app)
+        .post('/userbase/register')
+        .send({
+          email: 'test@test.com',
+          password: 'password123',
+          passwordConfirmation: 'password123'
+        });
+      userId = res.body.user.id;
 
-      it('should fetch viewer successfully', async () => {
-        const res = await request(app)
-          .get(`/viewer/me/${userId}`)
-        
-        expect(res.body.status).toBe(200);
-        expect(res.body).toHaveProperty('viewer');
-        expect(res.body.viewer.user_id).toBe(userId);
-      });
+      //Create a viewer for testing
+      await request(app)
+        .post('/viewer')
+        .send({
+          userId: userId,
+          username: 'test_username'
+        });
     });
 
+    it('should fetch viewer successfully', async () => {
+      const res = await request(app)
+        .get(`/viewer/me/${userId}`)
+
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty('viewer');
+      expect(res.body.viewer.user_id).toBe(userId);
+    });
+
+    it('should fail to get unexisting user', async () => {
+      const res = await request(app)
+        .get('/viewer/me/00000000-0000-0000-0000-000000000000')
+    
+      expect(res.status).toBe(404);
+      expect(res.body.code).toBe('NOT_FOUND');
+    })
   });
 });

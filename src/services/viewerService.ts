@@ -71,6 +71,20 @@ export class ViewerService {
     return await this.viewerRepo.update(viewerId, updates);
   }
 
+  async getMe(userId: string): Promise<Viewer> {
+    const user = await this.userBaseRepo.findById(userId);
+    if(!user) {
+      throw new NotFoundError('User not found');
+    }
+
+    const viewer = await this.getByUserId(userId);
+    if(!viewer) {
+      throw new NotFoundError("Viewer not found");
+    }
+
+    return viewer;
+  }
+
   async softDelete(viewerId: string, userId: string, user_password: string): Promise<Viewer> {
     const user = await this.userBaseRepo.findById(userId);
     if(!user) {

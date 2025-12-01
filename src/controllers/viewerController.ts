@@ -117,7 +117,7 @@ export const ViewerGetMe = async (req: Request, res: Response, next: NextFunctio
       throw new ValidationError("UserId required");  // remove this after JWT implementation
     }
 
-    const viewer = await viewerService.getByUserId(req.params.userId);
+    const viewer = await viewerService.getMe(req.params.userId);
 
     res.status(200).json({ viewer })
 
