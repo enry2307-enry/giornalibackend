@@ -3,20 +3,22 @@ import request from 'supertest';
 import app from '../../src/app';
 import supabase from '../../src/config/supabase';
 
+async function cleanup(): Promise<void> {
+  await supabase
+    .from('viewer')
+    .delete()
+    .like('username', '%test%');
+
+  await supabase
+    .from('userbase')
+    .delete()
+    .like('email', '%@test.com');
+}
+
 describe('Viewer API Integration Tests', () => {
   
   // cleanup
-  afterEach(async () => {
-    await supabase
-      .from('viewer')
-      .delete()
-      .like('username', '%test%');
-
-    await supabase
-      .from('userbase')
-      .delete()
-      .eq('email', 'test@test.com');
-  });
+  afterEach(cleanup);
 
   describe('POST /viewer', () => {
     let userId: string;
