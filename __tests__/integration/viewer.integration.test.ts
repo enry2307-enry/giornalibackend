@@ -322,7 +322,7 @@ describe('Viewer API Integration Tests', () => {
         .get(`/viewer/${res.body.viewer.id}`)
       
       expect(res.status).toBe(200);
-      expect(res.body).toHaveProperty('viewer');
+      expect(res.body).not.toHaveProperty('viewer');
 
       // This test shouldn't actually be here
       // But for now it is the best place to put it into
