@@ -91,7 +91,7 @@ export class ViewerService {
   }
 
   async softDelete(viewerId: string, userId: string, user_password: string): Promise<Viewer> {
-    const user = await this.userBaseRepo.findById(userId);
+    const user = await this.userBaseRepo.findById(userId, ["password_hash"]);
     if(!user) {
       throw new NotFoundError("User not found");
     }

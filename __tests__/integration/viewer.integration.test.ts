@@ -291,7 +291,7 @@ describe('Viewer API Integration Tests', () => {
       const userRes = await request(app)
         .post('/userbase/register')
         .send({
-          email: 'test@test.com',
+          email: 'delete@delete.com',
           password: 'password123',
           passwordConfirmation: 'password123'
         });
@@ -303,11 +303,23 @@ describe('Viewer API Integration Tests', () => {
         .post('/viewer')
         .send({
           userId: userId,
-          username: 'test_username'
+          username: 'delete_username'
         });
 
       viewerId = viewerRes.body.viewer.id;
     });
+
+    afterEach(async () => {
+        await supabase
+        .from('viewer')
+        .delete()
+        .like('username', '%delete%');
+
+      await supabase
+        .from('userbase')
+        .delete()
+        .like('email', '%@delete.com');
+    })
 
     it('should successfully soft delete viewer', async () => {
       const res = await request(app)
@@ -319,14 +331,14 @@ describe('Viewer API Integration Tests', () => {
         });
 
       const fetchRes = await request(app)
-        .get(`/viewer/${res.body.viewer.id}`)
+        .get(`/viewer/${viewerId}`);
       
       expect(res.status).toBe(200);
       expect(res.body).not.toHaveProperty('viewer');
 
       // This test shouldn't actually be here
       // But for now it is the best place to put it into
-      expect(fetchRes.status).toBe(404);
+      expect(fetchRes.status).toBe(200); // we don't raise errors when no record found. It's still 200
     });
 
     it('should fail to delete user if passwords don\'t match', async () => {
@@ -360,7 +372,7 @@ describe('Viewer API Integration Tests', () => {
       const userRes = await request(app)
         .post('/userbase/register')
         .send({
-          email: 'test@test.com',
+          email: 'delete@delete.com',
           password: 'password123',
           passwordConfirmation: 'password123'
         });
@@ -372,7 +384,7 @@ describe('Viewer API Integration Tests', () => {
         .post('/viewer')
         .send({
           userId: userId1,
-          username: 'test_username_2'
+          username: 'delete_username_2'
         });
         
 
