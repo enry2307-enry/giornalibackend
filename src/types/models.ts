@@ -18,6 +18,13 @@ export interface Category {
 	icon_url: string | null;
 	parent_category_id: string | null; // FK Category
 }
+export type CategoryInsert = Pick<Category, 
+	'name' |
+	'priority' |
+	'icon_url' |
+	'parent_category_id'
+>
+
 
 export interface CommentOnPost {
 	id: string;
@@ -204,6 +211,13 @@ export interface ScrollVideo {
 	attachments_payload: Record<string, unknown> | null;
 	category_id: string; // FK Category
 }
+export type ScrollVideoInsert = Pick<ScrollVideo, 
+	'publisher_id' | 
+	'description' | 
+	'video_url' | 
+	'attachments_payload'| 
+	'category_id' 
+>
 
 export interface UserBase {
 	id: string;

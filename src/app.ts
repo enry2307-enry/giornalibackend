@@ -19,3 +19,5 @@ app.use('/viewer', ViewerRouter);
 app.use(errorHandler);
 
 export default app;
+
+// GET https://nostrosito.com/userbase/0000-abdefg

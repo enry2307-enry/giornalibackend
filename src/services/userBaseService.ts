@@ -9,7 +9,7 @@ export class UserBaseService {
   private repo = new UserBaseRepository();
 
   async create(email: string, password: string): Promise<UserBase> {
-    const existing = await this.repo.findByEmail(email);
+    const existing = await this.repo.findByField('email', email);
     if (existing) {
       throw new DuplicateError('Email already exists');
     }
@@ -33,7 +33,7 @@ export class UserBaseService {
   }
 
   async getByEmail(email: string) {
-    const user = await this.repo.findByEmail(email);
+    const user = await this.repo.findByField('email', email);
     if (!user) {
       throw new NotFoundError('User not found');
     }
