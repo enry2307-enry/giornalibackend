@@ -382,29 +382,3 @@ export abstract class BaseRepository<T extends { id: string }> {
     }
   }
 }
-
-// Example implementation
-// export interface Viewer {
-//   id: string;
-//   user_id: string;
-//   name: string;
-//   email: string;
-//   created_at: string;
-//   is_deleted: boolean;
-// }
-// 
-// export class ViewerRepository extends BaseRepository<Viewer> {
-//   protected tableName = 'viewers';
-//   protected defaultSelect = 'id,user_id,name,email,created_at';
-// 
-//   async findByUserId(userId: string): Promise<Viewer | null> {
-//     return this.findOneWhere({ user_id: userId });
-//   }
-// 
-//   async findActiveViewers(): Promise<Viewer[]> {
-//     return this.findAll({ 
-//       orderBy: { column: 'created_at', ascending: false },
-//       limit: 100 
-//     });
-//   }
-// }
