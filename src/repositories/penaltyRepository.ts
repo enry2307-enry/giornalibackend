@@ -4,4 +4,5 @@ import { BaseRepository } from './baseRepository';
 
 export class PenaltyRepository extends BaseRepository<Penalty> {
   protected tableName = 'penalty';
+  protected defaultSelect = 'id,created_at';
 }

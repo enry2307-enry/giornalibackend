@@ -4,4 +4,5 @@ import { BaseRepository } from './baseRepository';
 
 export class ReportCategoryRepository extends BaseRepository<ReportCategory> {
   protected tableName = 'reportcategory';
+  protected defaultSelect = 'id,created_at';
 }

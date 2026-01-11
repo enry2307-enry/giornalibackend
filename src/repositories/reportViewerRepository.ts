@@ -4,4 +4,5 @@ import { BaseRepository } from './baseRepository';
 
 export class ReportViewerRepository extends BaseRepository<ReportViewer> {
   protected tableName = 'reportviewer';
+  protected defaultSelect = 'id,created_at';
 }

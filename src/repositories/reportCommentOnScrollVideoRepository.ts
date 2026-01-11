@@ -4,4 +4,5 @@ import { BaseRepository } from './baseRepository';
 
 export class ReportCommentOnScrollVideoRepository extends BaseRepository<ReportCommentOnScrollVideo> {
   protected tableName = 'reportcommentonscrollvideo';
+  protected defaultSelect = 'id,created_at';
 }

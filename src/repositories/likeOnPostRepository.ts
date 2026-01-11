@@ -4,4 +4,5 @@ import { BaseRepository } from './baseRepository';
 
 export class LikeOnPostRepository extends BaseRepository<LikeOnPost> {
   protected tableName = 'likeonpost';
+  protected defaultSelect = 'id,created_at';
 }

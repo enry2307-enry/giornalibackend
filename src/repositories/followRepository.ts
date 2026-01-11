@@ -4,4 +4,5 @@ import { BaseRepository } from './baseRepository';
 
 export class FollowRepository extends BaseRepository<Follow> {
   protected tableName = 'follow';
+  protected defaultSelect = 'id,created_at';
 }

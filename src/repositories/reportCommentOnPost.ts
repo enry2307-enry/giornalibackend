@@ -4,4 +4,5 @@ import { BaseRepository } from './baseRepository';
 
 export class ReportCommentOnPostRepository extends BaseRepository<ReportCommentOnPost> {
   protected tableName = 'reportcommentonpost';
+  protected defaultSelect = 'id,created_at';
 }

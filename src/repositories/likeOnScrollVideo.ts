@@ -4,4 +4,5 @@ import { BaseRepository } from './baseRepository';
 
 export class LikeOnScrollVideoRepository extends BaseRepository<LikeOnScrollVideo> {
   protected tableName = 'likeonscrollvideo';
+  protected defaultSelect = 'id,created_at';
 }

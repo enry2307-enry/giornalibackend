@@ -4,4 +4,5 @@ import { BaseRepository } from './baseRepository';
 
 export class PublisherRepository extends BaseRepository<Publisher> {
   protected tableName = 'publisher';
+  protected defaultSelect = 'id,created_at';
 }
