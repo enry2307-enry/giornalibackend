@@ -1,6 +1,7 @@
 //__tests__/integration/viewer.integration.test.ts
 import request from 'supertest';
 import app from '../../src/app';
+import { Response } from 'supertest';
 import supabase from '../../src/config/supabase';
 
 async function cleanup(): Promise<void> {
@@ -15,6 +16,22 @@ async function cleanup(): Promise<void> {
     .like('email', '%@test.com');
 }
 
+async function createUser(
+  email: string = 'test@test.com',
+  password: string = 'password123',
+  passwordConfirmation: string = 'password123'
+): Promise<Response> {
+  const res = await request(app)
+    .post('/userbase/register')
+    .send({
+      email: 'test@test.com',
+      password: 'password123',
+      passwordConfirmation: 'password123'
+    });
+  
+  return res;
+}
+
 describe('Viewer API Integration Tests', () => {
   
   // cleanup
@@ -25,13 +42,7 @@ describe('Viewer API Integration Tests', () => {
 
     beforeEach(async () => {
       // Create a user for testing
-      const res = await request(app)
-        .post('/userbase/register')
-        .send({
-          email: 'test@test.com',
-          password: 'password123',
-          passwordConfirmation: 'password123'
-        });
+      const res = await createUser();
       userId = res.body.user.id;
     });
 

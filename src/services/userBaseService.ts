@@ -9,7 +9,11 @@ export class UserBaseService {
   private repo = new UserBaseRepository();
 
   async create(email: string, password: string): Promise<UserBase> {
+<<<<<<< HEAD
     const existing = await this.repo.findOneWhere({email: email});
+=======
+    const existing = await this.repo.findByField('email', email);
+>>>>>>> fe503f3d5147ea00a87299917acc220491add892
     if (existing) {
       throw new DuplicateError('Email already exists');
     }
@@ -35,7 +39,7 @@ export class UserBaseService {
   }
 
   async getByEmail(email: string) {
-    const user = await this.repo.findByEmail(email);
+    const user = await this.repo.findByField('email', email);
     if (!user) {
       throw new NotFoundError('User not found');
     }
