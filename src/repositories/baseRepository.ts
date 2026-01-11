@@ -199,6 +199,9 @@ import { RepositoryError, NotFoundError, FindOptions, QueryOptions } from '../ty
  *   throw error; // Unexpected error
  * }
  */
+
+type DatabaseManagedFields = 'id' | 'created_at' | 'updated_at' | 'is_deleted';
+
 export abstract class BaseRepository<T extends { id: string }> {
   protected abstract tableName: string;
   protected abstract defaultSelect: string;
@@ -317,7 +320,7 @@ export abstract class BaseRepository<T extends { id: string }> {
     }
   }
 
-  async create(item: Omit<T, 'id'>): Promise<T> {
+  async create(item: Omit<T, DatabaseManagedFields>): Promise<T> {
     try {
       const { data, error } = await supabase
         .from(this.tableName)
@@ -332,7 +335,7 @@ export abstract class BaseRepository<T extends { id: string }> {
     }
   }
 
-  async update(id: string, item: Partial<Omit<T, 'id'>>): Promise<T> {
+  async update(id: string, item: Partial<Omit<T, DatabaseManagedFields>>): Promise<T> {
     try {
       const { data, error } = await supabase
         .from(this.tableName)

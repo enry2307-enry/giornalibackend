@@ -9,16 +9,18 @@ export class UserBaseService {
   private repo = new UserBaseRepository();
 
   async create(email: string, password: string): Promise<UserBase> {
-    const existing = await this.repo.findByEmail(email);
+    const existing = await this.repo.findOneWhere({email: email});
     if (existing) {
       throw new DuplicateError('Email already exists');
     }
 
     const password_hash = await bcrypt.hash(password, 10);
 
+
+    // Error Here
     const user: UserBaseInsert = {
       email,
-      password_hash
+      password_hash,
     };
 
     return await this.repo.create(user);
@@ -38,23 +40,6 @@ export class UserBaseService {
       throw new NotFoundError('User not found');
     }
     return user;
-  }
-
-  async updatePassword(userId: string, oldPassword: string, newPassword: string): Promise<UserBase> {
-    const user = await this.repo.findById(userId, ['password_hash']);
-
-    if(!user) {
-      throw new NotFoundError("User not found")
-    }
-
-    const valid = await bcrypt.compare(oldPassword, user.password_hash);
-    if(!valid) {
-      throw new ValidationError('Invalid password');
-    }
-
-    const password_hash = await bcrypt.hash(newPassword, 10);
-    
-    return await this.repo.update(userId, { password_hash });
   }
 
   async softDelete(userId: string, password: string): Promise<void> {
