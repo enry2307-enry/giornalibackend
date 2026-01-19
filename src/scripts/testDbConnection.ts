@@ -10,8 +10,8 @@ import supabase from '../config/supabase';
     .limit(1);
   
   if (error) {
-    console.error('❌ Connection failed:', error.message);
+    console.error('Connection failed:', error.message);
   } else {
-    console.log('✅ Supabase connected successfully');
+    console.log('Supabase connected successfully');
   }
 })();
