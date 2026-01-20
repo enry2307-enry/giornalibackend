@@ -1,6 +1,6 @@
 // repositories/BaseRepository.ts
 import supabase from '../config/supabase';
-import { RepositoryError, NotFoundError, FindOptions, QueryOptions } from '../types/repository';
+import { RepositoryError, NotFoundError, FindOptions, QueryOptions } from '../types/repositoryTypes';
 
 /**
  * BaseRepository<T>

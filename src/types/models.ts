@@ -6,7 +6,7 @@ import {
 	PenaltyType,
 	UserVerificationStatus,
 	PublisherVerificationStatus,
-} from './database';
+} from './db_enums';
 
 export interface Category {
 	id: string;
