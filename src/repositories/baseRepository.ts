@@ -200,9 +200,15 @@ import { RepositoryError, NotFoundError, FindOptions, QueryOptions } from '../ty
  * }
  */
 
-type DatabaseManagedFields = 'id' | 'created_at' | 'updated_at' | 'is_deleted';
+type DatabaseManagedFields = 
+  | 'id' 
+  | 'created_at' 
+  | 'updated_at' 
+  | 'is_deleted';
 
-export abstract class BaseRepository<T extends { id: string }> {
+export abstract class BaseRepository<
+  T extends { id: string },
+>{
   protected abstract tableName: string;
   protected abstract defaultSelect: string;
 
@@ -320,6 +326,12 @@ export abstract class BaseRepository<T extends { id: string }> {
     }
   }
 
+  // There is a problem that should be addressed here:
+  // The create() method needs to "Not Care" about 
+  //  database business default fields
+  // What we need:
+  //  - A way to tell Typescript that each entity has
+  //    its own InserInterface. 
   async create(item: Omit<T, DatabaseManagedFields>): Promise<T> {
     try {
       const { data, error } = await supabase

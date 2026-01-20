@@ -1,5 +1,5 @@
 // repositories/userBaseRepository.ts
-import { UserBase } from '../types/models';
+import { UserBase, UserBaseInsert } from '../types/models';
 import { BaseRepository } from './baseRepository';
 import supabase from '../config/supabase';
 
