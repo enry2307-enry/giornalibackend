@@ -1,6 +1,6 @@
 import express from 'express';
-import { UserBaseRouter } from './routes/userBaseRouter';
-import { ViewerRouter } from './routes/viewerRouter';
+import { UserBaseRouter } from './routes/userBase';
+import { ViewerRouter } from './routes/viewer';
 import { errorHandler } from './middleware/errorHandler';
 
 import helmet from 'helmet';

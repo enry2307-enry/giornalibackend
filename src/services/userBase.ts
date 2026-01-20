@@ -1,7 +1,7 @@
 // services/userBaseService.ts
 import bcrypt from 'bcrypt';
 
-import { UserBaseRepository } from '../repositories/userBaseRepository';
+import { UserBaseRepository } from '../repositories/userBase';
 import { DuplicateError, NotFoundError, ValidationError } from '../errors/AppError';
 import { UserBase, UserBaseInsert } from '../types/models'; 
 

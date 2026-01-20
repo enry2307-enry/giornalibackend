@@ -207,7 +207,8 @@ type DatabaseManagedFields =
   | 'is_deleted';
 
 export abstract class BaseRepository<
-  T extends { id: string },
+  Entity extends { id: string },
+  Insert extends Partial<Entity>
 >{
   protected abstract tableName: string;
   protected abstract defaultSelect: string;
@@ -236,7 +237,7 @@ export abstract class BaseRepository<
     throw new RepositoryError(`${context} failed: ${error.message}`, error);
   }
 
-  async findAll(options?: FindOptions): Promise<T[]> {
+  async findAll(options?: FindOptions): Promise<Entity[]> {
     try {
       let query = supabase
         .from(this.tableName)
@@ -247,13 +248,13 @@ export abstract class BaseRepository<
       const { data, error } = await query;
       
       if (error) throw error;
-      return data as unknown as T[];
+      return data as unknown as Entity[];
     } catch (error) {
       this.handleError(error, 'findAll');
     }
   }
 
-  async findById(id: string, options?: FindOptions): Promise<T> {
+  async findById(id: string, options?: FindOptions): Promise<Entity> {
     try {
       let query = supabase
         .from(this.tableName)
@@ -271,7 +272,7 @@ export abstract class BaseRepository<
         throw error;
       }
 
-      return data as unknown as T;
+      return data as unknown as Entity;
     } catch (error) {
       if (error instanceof NotFoundError) throw error;
       this.handleError(error, 'findById');
@@ -281,7 +282,7 @@ export abstract class BaseRepository<
   async findWhere(
     conditions: Record<string, any>,
     options?: FindOptions
-  ): Promise<T[]> {
+  ): Promise<Entity[]> {
     try {
       let query = supabase
         .from(this.tableName)
@@ -296,7 +297,7 @@ export abstract class BaseRepository<
       const { data, error } = await query;
       
       if (error) throw error;
-      return data as unknown as T[];
+      return data as unknown as Entity[];
     } catch (error) {
       this.handleError(error, 'findWhere');
     }
@@ -305,7 +306,7 @@ export abstract class BaseRepository<
   async findOneWhere(
     conditions: Record<string, any>,
     options?: FindOptions
-  ): Promise<T | null> {
+  ): Promise<Entity | null> {
     try {
       let query = supabase
         .from(this.tableName)
@@ -320,7 +321,7 @@ export abstract class BaseRepository<
       const { data, error } = await query.maybeSingle();
       
       if (error) throw error;
-      return data as T | null;
+      return data as Entity | null;
     } catch (error) {
       this.handleError(error, 'findOneWhere');
     }
@@ -332,7 +333,7 @@ export abstract class BaseRepository<
   // What we need:
   //  - A way to tell Typescript that each entity has
   //    its own InserInterface. 
-  async create(item: Omit<T, DatabaseManagedFields>): Promise<T> {
+  async create(item: Insert): Promise<Entity> {
     try {
       const { data, error } = await supabase
         .from(this.tableName)
@@ -341,13 +342,13 @@ export abstract class BaseRepository<
         .single();
       
       if (error) throw error;
-      return data as unknown as T;
+      return data as unknown as Entity;
     } catch (error) {
       this.handleError(error, 'create');
     }
   }
 
-  async update(id: string, item: Partial<Omit<T, DatabaseManagedFields>>): Promise<T> {
+  async update(id: string, item: Insert): Promise<Entity> {
     try {
       const { data, error } = await supabase
         .from(this.tableName)
@@ -363,7 +364,7 @@ export abstract class BaseRepository<
         }
         throw error;
       }
-      return data as unknown as T;
+      return data as unknown as Entity;
     } catch (error) {
       if (error instanceof NotFoundError) throw error;
       this.handleError(error, 'update');

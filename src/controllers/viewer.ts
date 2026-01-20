@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { ValidationError } from '../errors/AppError';
-import { ViewerService } from '../services/viewerService';
+import { ViewerService } from '../services/viewer';
 import { Viewer } from '../types/models';
 
 const viewerService = new ViewerService();

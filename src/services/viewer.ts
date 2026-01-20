@@ -1,8 +1,8 @@
 // services/viewerService.ts
 import bcrypt from 'bcrypt';
 
-import { ViewerRepository } from '../repositories/viewerRepository';
-import { UserBaseRepository } from '../repositories/userBaseRepository';
+import { ViewerRepository } from '../repositories/viewer';
+import { UserBaseRepository } from '../repositories/userBase';
 
 import { Viewer, ViewerInsert } from '../types/models';
 import { DuplicateError, NotFoundError, ValidationError, ForbiddenError } from '../errors/AppError';

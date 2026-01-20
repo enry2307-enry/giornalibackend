@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { ValidationError } from '../errors/AppError';
-import { UserBaseService } from '../services/userBaseService';
+import { UserBaseService } from '../services/userBase';
 
 const userBaseService = new UserBaseService();
 

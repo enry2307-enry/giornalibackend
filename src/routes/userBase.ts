@@ -4,7 +4,7 @@ import {
   UserBaseUpdatePassword, 
   UserBaseGetById,
   UserBaseSoftDelete
-} from '../controllers/userBaseController';
+} from '../controllers/userBase';
 
 const UserBaseRouter = Router();
 

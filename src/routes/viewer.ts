@@ -5,7 +5,7 @@ import {
   ViewerSoftDelete, 
   ViewerGetById, 
   ViewerGetMe 
-} from '../controllers/viewerController';
+} from '../controllers/viewer';
 
 const ViewerRouter = Router();
 
