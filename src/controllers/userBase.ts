@@ -1,15 +1,20 @@
+/**
+ * TODO: JWT Authentication Migration
+ * 
+ * Currently using userId from route params and/or request body for development.
+ * When JWT is implemented:
+ * - Remove userId from route parameters
+ * - Remove userId from request body
+ * - Extract userId from req.user.id (JWT payload)
+ * - Remove manual userId validation checks
+ */
+
 import { Request, Response, NextFunction } from 'express';
 import { ValidationError } from '../errors/AppError';
 import { UserBaseService } from '../services/userBase';
+import { requireFields } from '../scripts/requireFields';
 
 const userBaseService = new UserBaseService();
-
-// Centralize validation
-const requireFields = (fields: Record<string, any>) => {
-  for (const [name, value] of Object.entries(fields)) {
-    if (!value) throw new ValidationError(`${name} required`);
-  }
-};
 
 export const userBaseController = {
   getById: async (req: Request, res: Response, next: NextFunction): Promise<void> => {

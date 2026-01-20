@@ -1,134 +1,90 @@
+/**
+ * TODO: JWT Authentication Migration
+ * 
+ * Currently using userId from route params and/or request body for development.
+ * When JWT is implemented:
+ * - Remove userId from route parameters
+ * - Remove userId from request body
+ * - Extract userId from req.user.id (JWT payload)
+ * - Remove manual userId validation checks
+ */
+
 import { Request, Response, NextFunction } from 'express';
-import { ValidationError } from '../errors/AppError';
 import { ViewerService } from '../services/viewer';
 import { Viewer } from '../types/models';
+import { requireFields } from '../scripts/requireFields';
 
 const viewerService = new ViewerService();
 
-export const ViewerCreate = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    if (!req.body.username) {
-      throw new ValidationError("Username required");
+export const viewerController = {
+  create: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { userId, username, description, profile_image_url } = req.body;
+      requireFields({userId: userId, username: username});
+      const viewer = await viewerService.create(
+        userId, 
+        username,
+        description || null,
+        profile_image_url || null
+      );
+      res.status(201).json({ viewer });
+    } catch (error) {
+      next(error);
     }
-    if (!req.body.userId) {
-      throw new ValidationError("UserId required");
+  },
+
+  softDelete:async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { userId, password, passwordConfirmation } = req.body;
+      requireFields({viewerId: req.params.viewerId, userId, password, passwordConfirmation});
+      const viewer = await viewerService.softDelete(
+        req.params.viewerId,
+        req.body.userId,
+        req.body.password
+      );
+      res.status(200).json({ viewer });
+    } catch (error) {
+      next(error);
     }
+  },
 
-    const viewer = await viewerService.create(
-      req.body.userId, 
-      req.body.username,
-      req.body.description || null,
-      req.body.profile_image_url || null
-    );
+  update: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { userId, description, profile_image_url } = req.body;
+      requireFields({viewerId: req.params.viewerId, userId});
+      const updates: Partial<Pick<Viewer, 'description' | 'profile_image_url'>> = {};
+      
+      if (description !== undefined) updates.description = description;
+      if (profile_image_url !== undefined) updates.profile_image_url = profile_image_url;
 
-    res.status(201).json({ viewer });
-  
-  } catch (error) {
-    next(error);
-  }
-}
-
-export const ViewerSoftDelete = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-
-    // TODO: After auth implementation, get from JWT token
-    // const userId = req.user.id;
-
-    if(!req.params.viewerId) {
-      throw new ValidationError("ViewerId required");
+      const viewer = await viewerService.update(
+        userId,
+        req.params.viewerId,
+        updates
+      );
+      res.status(200).json({ viewer });
+    } catch (error) {
+      next(error);
     }
-    if(!req.body.userId) {
-      throw new ValidationError("UserId required"); // Remove this after JWT
+  },
+
+  getById: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      requireFields({viewerId: req.params.viewerId});
+      const viewer = await viewerService.getById(req.params.viewerId);
+      res.status(200).json({ viewer });
+    } catch(error) {
+      next(error);
     }
-    if(!req.body.password) {
-      throw new ValidationError("Password required");
+  },
+
+  getMe: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      requireFields({userId: req.params.userId});
+      const viewer = await viewerService.getMe(req.params.userId);
+      res.status(200).json({ viewer });
+    } catch (error) {
+      next(error);
     }
-    if(!req.body.passwordConfirmation) {
-      throw new ValidationError("Password confirmation required");
-    }
-
-    if(req.body.password !== req.body.passwordConfirmation) {
-      throw new ValidationError("Passwords don't match");
-    }
-
-    const viewer = await viewerService.softDelete(
-      req.params.viewerId,
-      req.body.userId,  // this will be removed when JWT implemented
-      req.body.password
-    );
-
-    res.status(200).json({ viewer });
-
-  } catch (error) {
-    next(error);
-  }
-}
-
-export const ViewerUpdate = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    // TODO: After auth implementation, get userId from JWT token
-    // const userId = req.user.id;
-    
-    if (!req.params.viewerId) {
-      throw new ValidationError("ViewerId required");
-    }
-    if (!req.body.userId) {
-      throw new ValidationError("UserId required"); // Remove after JWT
-    }
-
-    const updates: Partial<Pick<Viewer, 'description' | 'profile_image_url'>> = {};
-    
-    if (req.body.description !== undefined) updates.description = req.body.description;
-    if (req.body.profile_image_url !== undefined) updates.profile_image_url = req.body.profile_image_url;
-
-    if (Object.keys(updates).length === 0) {
-      throw new ValidationError("No fields to update");
-    }
-
-    const viewer = await viewerService.update(
-      req.body.userId,  // will be req.user.id after JWT
-      req.params.viewerId,
-      updates
-    );
-
-    res.status(200).json({ viewer });
-
-  } catch (error) {
-    next(error);
-  }
-}
-
-export const ViewerGetById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-
-    if(!req.params.viewerId) {
-      throw new ValidationError("ViewerId required");
-    }
-
-    const viewer = await viewerService.getById(req.params.viewerId);
-
-    res.status(200).json({ viewer });
-
-  } catch(error) {
-    next(error);
-  }
-}
-
-export const ViewerGetMe = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-
-    // TODO: After auth implementation, get userId from JWT token
-    // const userId = req.user.id;
-    
-    if(!req.params.userId) {
-      throw new ValidationError("UserId required");  // remove this after JWT implementation
-    }
-
-    const viewer = await viewerService.getMe(req.params.userId);
-
-    res.status(200).json({ viewer })
-
-  } catch (error) {
-    next(error);
   }
 }
