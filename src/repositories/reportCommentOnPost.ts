@@ -2,7 +2,7 @@
 import { ReportCommentOnPost } from '../types/models';
 import { BaseRepository } from './baseRepository';
 
-export class ReportCommentOnPostRepository extends BaseRepository<ReportCommentOnPost> {
+export class ReportCommentOnPostRepository extends BaseRepository<ReportCommentOnPost, ReportCommentOnPost> {
   protected tableName = 'reportcommentonpost';
   protected defaultSelect = 'id,created_at';
 }

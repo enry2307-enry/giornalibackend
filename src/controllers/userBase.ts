@@ -4,126 +4,89 @@ import { UserBaseService } from '../services/userBase';
 
 const userBaseService = new UserBaseService();
 
-export const UserBaseList = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    res.send('NOT IMPLEMENTED: UserBase list');
-  } catch (error) {
-    next(error);
+// Centralize validation
+const requireFields = (fields: Record<string, any>) => {
+  for (const [name, value] of Object.entries(fields)) {
+    if (!value) throw new ValidationError(`${name} required`);
   }
-}
+};
 
-export const UserBaseGetById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    // TODO: After auth implementation, get from JWT token
-    // const userId = req.user.id;
-
-    if(!req.params.userId) {
-      throw new ValidationError("UserId required");  // remove this when JWT implemented
+export const userBaseController = {
+  getById: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      requireFields({ userId: req.params.userId });
+      const user = await userBaseService.getById(req.params.userId);
+      res.status(200).json({ user });
+    } catch (error) {
+      next(error);
     }
+  },
 
-    const user = await userBaseService.getById(req.params.userId);  // change parameter when JWT implemented
+  getByEmail: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      requireFields({ email: req.body.email });
+      const user = await userBaseService.getByEmail(req.body.email);  // FIX: was getById
+      res.status(200).json({ user });
+    } catch (error) {
+      next(error);
+    }
+  },
 
-    res.status(200).json({ user });
-  } catch (error) {
-    next(error);
+  signUp: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { email, password, passwordConfirmation } = req.body;
+      requireFields({ email, password, passwordConfirmation });
+      
+      if (password !== passwordConfirmation) {
+        throw new ValidationError("Passwords don't match");
+      }
+
+      const user = await userBaseService.create(email, password);
+      res.status(201).json({ user });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  updatePassword: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { oldPassword, newPassword, newPasswordConfirmation } = req.body;
+      requireFields({ 
+        userId: req.params.userId,
+        oldPassword, 
+        newPassword, 
+        newPasswordConfirmation 
+      });
+
+      if (newPassword !== newPasswordConfirmation) {
+        throw new ValidationError("Passwords don't match");
+      }
+
+      const user = await userBaseService.updatePassword(
+        req.params.userId,
+        oldPassword,
+        newPassword
+      );
+      res.status(200).json({ user });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  softDelete: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      requireFields({ 
+        userId: req.params.userId,
+        password: req.body.password 
+      });
+
+      const user = await userBaseService.softDelete(
+        req.params.userId,
+        req.body.password
+      );
+      res.status(200).json({ user });
+    } catch (error) {
+      next(error);
+    }
   }
-}
-
-export const UserBaseGetByEmail = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    if(!req.body.email) {
-      throw new ValidationError("Email required");
-    }
-
-    const user = await userBaseService.getById(req.body.email);
-
-    res.status(200).json({ user })
-  } catch (error) {
-    next(error);
-  }
-}
-
-export const UserBaseRegister = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    if(!req.body.email) {
-      throw new ValidationError("Email required");
-    }
-    if(!req.body.password) {
-      throw new ValidationError("Password required");
-    }
-    if(!req.body.passwordConfirmation ) {
-      throw new ValidationError("Password Confirmation required");
-    }
-    if(req.body.password !== req.body.passwordConfirmation ) {
-      throw new ValidationError("Passwords don't match");
-    }
-
-    const user = await userBaseService.create(
-      req.body.email, 
-      req.body.password
-    );
-
-    res.status(201).json({ user });
-
-  } catch (error) {
-    next(error);
-  }
-}
-
-export const UserBaseUpdatePassword = async(req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    // TODO: After auth implementation, get from JWT token
-    // const userId = req.user.id;
-
-    if(!req.params.userId) {
-      throw new ValidationError("UserId required"); // remove this when JWT implemented
-    }
-    if(!req.body.oldPassword) {
-      throw new ValidationError("Old Password required");
-    }
-    if(!req.body.newPassword) {
-      throw new ValidationError("New Password required");
-    }
-    if(!req.body.newPasswordConfirmation) {
-      throw new ValidationError("New Password Confirmation required");
-    }
-    if(req.body.newPassword !== req.body.newPasswordConfirmation) {
-      throw new ValidationError("Passwords don't match");
-    }
-
-    const user = await userBaseService.updatePassword(
-      req.params.userId, // change this to userId when JWT implemented
-      req.body.oldPassword,
-      req.body.newPassword
-    );
-
-    res.status(200).json({ user });
-
-  } catch (error) {
-    next(error);
-  }
-}
-
-export const UserBaseSoftDelete = async(req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    // TODO: After auth implementation, get from JWT token
-    // const userId = req.user.id;
-
-    if(!req.params.userId) {
-      throw new ValidationError("UserId required"); // remove this when JWT implemented
-    }
-    if(!req.body.password) {
-      throw new ValidationError("Password required");
-    }
-
-    const user = await userBaseService.softDelete(
-      req.params.userId,  // change this to userId when JWT implemented
-      req.body.password
-    );
-
-    res.status(200).json({ user });
-
-  } catch (error) {
-    next(error);
-  }
-}
+};

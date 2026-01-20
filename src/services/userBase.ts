@@ -18,7 +18,6 @@ export class UserBaseService {
 
     const password_hash = await bcrypt.hash(password, 10);
 
-
     // Error Here
     const user: UserBaseInsert = {
       email,
@@ -43,6 +42,24 @@ export class UserBaseService {
     }
     return user;
   }
+
+  async updatePassword(userId: string, oldPassword: string, newPassword: string): Promise<UserBase> {
+    const user = await this.repo.findById(userId, {select: ['password_hash']});
+
+    if(!user) {
+      throw new NotFoundError("User not found")
+    }
+
+    const valid = await bcrypt.compare(oldPassword, user.password_hash);
+    if(!valid) {
+      throw new ValidationError('Invalid password');
+    }
+
+    const password_hash = await bcrypt.hash(newPassword, 10);
+    
+    return await this.repo.update(userId, { password_hash });
+  }
+
 
   async softDelete(userId: string, password: string): Promise<void> {
     const user = await this.repo.findById(userId, {select: ['password_hash']});

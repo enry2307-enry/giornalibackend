@@ -1,6 +1,6 @@
 // repositories/BaseRepository.ts
 import supabase from '../config/supabase';
-import { RepositoryError, NotFoundError, FindOptions, QueryOptions } from '../types/repositoryTypes';
+import { RepositoryError, NotFoundError, FindOptions, QueryOptions } from '../types/repository';
 
 /**
  * BaseRepository<T>
@@ -348,7 +348,7 @@ export abstract class BaseRepository<
     }
   }
 
-  async update(id: string, item: Insert): Promise<Entity> {
+  async update(id: string, item: Partial<Entity>): Promise<Entity> {
     try {
       const { data, error } = await supabase
         .from(this.tableName)

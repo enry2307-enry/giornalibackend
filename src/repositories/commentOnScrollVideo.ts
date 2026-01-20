@@ -2,7 +2,7 @@
 import { CommentOnScrollVideo } from '../types/models';
 import { BaseRepository } from './baseRepository';
 
-export class CommentOnScrollVideoRepository extends BaseRepository<CommentOnScrollVideo> {
+export class CommentOnScrollVideoRepository extends BaseRepository<CommentOnScrollVideo, CommentOnScrollVideo> {
   protected tableName = 'commentonscrollvideo';
   protected defaultSelect = 'id,created_at';
 }

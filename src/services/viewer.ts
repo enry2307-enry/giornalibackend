@@ -17,7 +17,7 @@ export class ViewerService {
     description?: string, 
     profile_image_url?: string
   ) {
-    const existingViewer = await this.viewerRepo.findByField('username', username, ['id']);
+    const existingViewer = await this.viewerRepo.findOneWhere({username: username}, {select: ['id']});
     if (existingViewer) {
       throw new DuplicateError("Username already taken");
     }
@@ -27,7 +27,7 @@ export class ViewerService {
       throw new NotFoundError("User does not exist");
     }
 
-    const existingViewerWithSameUserId = await this.viewerRepo.findByField('user_id', userId, ['id']);
+    const existingViewerWithSameUserId = await this.viewerRepo.findOneWhere({user_id: userId}, {select: ['id']});
     if(existingViewerWithSameUserId) {
       throw new DuplicateError("Viewer with this UserId already exists");
     }
@@ -43,11 +43,11 @@ export class ViewerService {
   }
 
   async getByUsername(username: string): Promise<Viewer | null> {
-    return await this.viewerRepo.getByUsername(username);
+    return await this.viewerRepo.findOneWhere({username: username});
   }
 
   async getByUserId(userId: string): Promise<Viewer | null> {
-    return await this.viewerRepo.getByUserId(userId);
+    return await this.viewerRepo.findOneWhere({user_id: userId});
   }
 
   async getById(viewerId: string): Promise<Viewer | null> {
@@ -91,7 +91,7 @@ export class ViewerService {
   }
 
   async softDelete(viewerId: string, userId: string, user_password: string): Promise<Viewer> {
-    const user = await this.userBaseRepo.findById(userId, ["password_hash"]);
+    const user = await this.userBaseRepo.findById(userId, {select: ["password_hash"]});
     if(!user) {
       throw new NotFoundError("User not found");
     }
