@@ -61,4 +61,14 @@ describe('UserBase API Integration Tests', () => {
     
     createdUserIds.push(res.body.user.id);
   });
+
+  it('shouldn\'t allow the creation of a user with an email already used', async () => {
+    const email = testEmail();
+
+    // creating two users with the same email
+    await createUser(email);
+    const res = await createUser(email);
+
+    expect(res.status).toBe(400);
+  });
 });
