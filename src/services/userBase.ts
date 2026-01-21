@@ -18,7 +18,6 @@ export class UserBaseService {
 
     const password_hash = await bcrypt.hash(password, 10);
 
-    // Error Here
     const user: UserBaseInsert = {
       email,
       password_hash,
