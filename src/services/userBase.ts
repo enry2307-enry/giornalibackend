@@ -2,7 +2,7 @@
 import bcrypt from 'bcrypt';
 
 import { UserBaseRepository } from '../repositories/userBase';
-import { DuplicateError, NotFoundError, ValidationError } from '../errors/AppError';
+import { DuplicateError, NotFoundError, ValidationError, ForbiddenError } from '../errors/AppError';
 import { UserBase, UserBaseInsert } from '../types/models'; 
 
 export class UserBaseService {
@@ -51,7 +51,7 @@ export class UserBaseService {
 
     const valid = await bcrypt.compare(oldPassword, user.password_hash);
     if(!valid) {
-      throw new ValidationError('Invalid password');
+      throw new ForbiddenError('Invalid password');
     }
 
     const password_hash = await bcrypt.hash(newPassword, 10);
