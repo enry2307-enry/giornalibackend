@@ -1,6 +1,6 @@
 import express from 'express';
-import { UserBaseRouter } from './routes/userBase';
-import { ViewerRouter } from './routes/viewer';
+import { userBaseRouter } from './routes/userBase';
+import { viewerRouter } from './routes/viewer';
 import { errorHandler } from './middleware/errorHandler';
 
 import helmet from 'helmet';
@@ -12,8 +12,8 @@ app.use(express.json());
 app.use(helmet());
 
 // Routes
-app.use('/userbase', UserBaseRouter);
-app.use('/viewer', ViewerRouter);
+app.use('/userbase', userBaseRouter);
+app.use('/viewer', viewerRouter);
 
 // Global error handler (should be after routes)
 app.use(errorHandler);
