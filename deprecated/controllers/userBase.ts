@@ -10,9 +10,9 @@
  */
 
 import { Request, Response, NextFunction } from 'express';
-import { ValidationError } from '../errors/AppError';
+import { ValidationError } from '../../src/errors/AppError';
 import { UserBaseService } from '../services/userBase';
-import { requireFields } from '../scripts/requireFields';
+import { requireFields } from '../../src/utils/requireFields';
 
 const userBaseService = new UserBaseService();
 

@@ -2,8 +2,8 @@
 import bcrypt from 'bcrypt';
 
 import { UserBaseRepository } from '../repositories/userBase';
-import { DuplicateError, NotFoundError, ValidationError, ForbiddenError } from '../errors/AppError';
-import { UserBase, UserBaseInsert } from '../types/models'; 
+import { DuplicateError, NotFoundError, ValidationError, ForbiddenError } from '../../src/errors/AppError';
+import { UserBase, UserBaseInsert } from '../../src/types/models'; 
 
 export class UserBaseService {
   private repo = new UserBaseRepository();

@@ -1,7 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
-import config from './config';
+import config from '../../config/config';
 
-// Create a single supabase client for interacting with your database
 const supabase = createClient(config.supabaseUrl, config.supabaseKey);
 
 export default supabase;

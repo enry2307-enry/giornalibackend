@@ -2,7 +2,7 @@
 import request from 'supertest';
 import app from '../../../src/app';
 import { Response } from 'supertest';
-import supabase from '../../../src/config/supabase';
+import supabase from '../../../src/core/database/supabase';
 
 /**
  * Integration: UserBase service + repository layer.

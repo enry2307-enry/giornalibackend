@@ -1,6 +1,6 @@
 // repositories/BaseRepository.ts
-import supabase from '../config/supabase';
-import { RepositoryError, NotFoundError, FindOptions, QueryOptions } from '../types/repository';
+import supabase from './supabase';
+import { RepositoryError, NotFoundError, FindOptions, QueryOptions } from '../../types/repository';
 
 /**
  * BaseRepository<T>
@@ -199,19 +199,12 @@ import { RepositoryError, NotFoundError, FindOptions, QueryOptions } from '../ty
  *   throw error; // Unexpected error
  * }
  */
-
-type DatabaseManagedFields = 
-  | 'id' 
-  | 'created_at' 
-  | 'updated_at' 
-  | 'is_deleted';
-
 export abstract class BaseRepository<
   Entity extends { id: string },
   Insert extends Partial<Entity>
 >{
   protected abstract tableName: string;
-  protected abstract defaultSelect: string;
+  protected defaultSelect = '*';
 
   protected getSelectString(options?: FindOptions): string {
     return options?.select?.join(',') || this.defaultSelect;
@@ -327,12 +320,6 @@ export abstract class BaseRepository<
     }
   }
 
-  // There is a problem that should be addressed here:
-  // The create() method needs to "Not Care" about 
-  //  database business default fields
-  // What we need:
-  //  - A way to tell Typescript that each entity has
-  //    its own InserInterface. 
   async create(item: Insert): Promise<Entity> {
     try {
       const { data, error } = await supabase

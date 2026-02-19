@@ -1,23 +1,29 @@
 import express from 'express';
-import { userBaseRouter } from './routes/userBase';
-import { viewerRouter } from './routes/viewer';
-import { errorHandler } from './middleware/errorHandler';
-
 import helmet from 'helmet';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import config from './config/config';
+import { userRouter } from './domains/auth/user.router';
+import { errorHandler } from './middleware/errorHandler';
 
 const app = express();
 
-app.use(express.json());
-
+// Security & Parsing
 app.use(helmet());
+app.use(cors({
+  origin: config.nodeEnv === 'production' ? 'https://tuodominio.it' : 'http://localhost:5173',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+app.use(express.json());
+app.use(cookieParser());
 
 // Routes
-app.use('/userbase', userBaseRouter);
-app.use('/viewer', viewerRouter);
+app.use('/api/v1/users', userRouter);
 
-// Global error handler (should be after routes)
+// Global error handler
 app.use(errorHandler);
 
 export default app;
-
-// GET https://nostrosito.com/userbase/0000-abdefg

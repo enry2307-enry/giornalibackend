@@ -11,8 +11,8 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { ViewerService } from '../services/viewer';
-import { Viewer } from '../types/models';
-import { requireFields } from '../scripts/requireFields';
+import { Viewer } from '../../src/types/models';
+import { requireFields } from '../../utils/requireFields';
 
 const viewerService = new ViewerService();
 

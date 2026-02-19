@@ -1,5 +1,5 @@
 // __tests__/setup.ts
-import supabase from "../src/config/supabase";
+import supabase from "../src/core/database/supabase";
 
 beforeAll(async () => {
   // Truncate all tables before test suite

@@ -9,6 +9,7 @@
 ## Project Structure
 ```
 \giornali-backend  
+ ├── \docs                 # Project documentation  
  ├── \src  
  │   ├── \__tests__        # Test files  
  │   ├── \config           # Configuration files (e.g., database, environment variables)  

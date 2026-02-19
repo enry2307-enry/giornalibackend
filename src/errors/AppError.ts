@@ -34,3 +34,9 @@ export class ForbiddenError extends AppError {
     super(message, 403, 'FORBIDDEN_ERROR');
   }
 }
+
+export class NotImplemented extends AppError {
+  constructor(message: string) {
+    super(message, 501, 'NOT_IMPLEMENTED')
+  }
+}
