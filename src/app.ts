@@ -3,8 +3,8 @@ import helmet from 'helmet';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import config from './config/config';
-import { userRouter } from './domains/auth/user.router';
-import { errorHandler } from './middleware/errorHandler';
+import { authRouter } from './domains/auth/auth.router';
+import { errorHandler } from './middleware/errHandler.middleware';
 
 const app = express();
 
@@ -21,7 +21,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 // Routes
-app.use('/api/v1/users', userRouter);
+app.use('/api/v1/auth', authRouter);
 
 // Global error handler
 app.use(errorHandler);

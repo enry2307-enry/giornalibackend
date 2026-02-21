@@ -1,27 +1,35 @@
 import bcrypt from 'bcrypt';
 import { authRepository } from "./auth.repository";
-import { UserBaseInsert } from "../../types/models";
 import { LoginDTO } from './auth.dto';
 import { jwtUtils } from '../../core/utils/jwt';
 import { ForbiddenError, NotFoundError } from '../../errors/AppError';
+import { PublicUser, Session } from './auth.types';
+import { toPublic } from '../../core/utils/objects.utils';
 
 class AuthService {
 
-  async register(body: UserBaseInsert) {
+  async register(dto: LoginDTO): Promise<Session> {
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(body.password_hash, salt);
+    const hashedPassword = await bcrypt.hash(dto.password, salt);
 
-    const rawUser = await authRepository.create({
-      ...body,
-      password_hash: hashedPassword
+    const newUser = await authRepository.create({
+      email: dto.email,
+      password_hash: hashedPassword,
+      status: 'pending_email_verification'
     });
 
-    const { password_hash, ...publicUser } = rawUser;
-    
-    return publicUser;
+    // Automatic login
+    const accessToken = jwtUtils.generateAccessToken({ id: newUser.id });
+    const refreshToken = jwtUtils.generateRefreshToken({ id: newUser.id });
+
+    return {
+      user: toPublic(newUser),
+      accessToken,
+      refreshToken
+    };
   }
 
-  async login(dto: LoginDTO) {
+  async login(dto: LoginDTO): Promise<Session> {
 
     const user = await authRepository.findOneWhere({email: dto.email});
     if (!user) {
@@ -36,10 +44,40 @@ class AuthService {
     const accessToken = jwtUtils.generateAccessToken({ id: user.id });
     const refreshToken = jwtUtils.generateRefreshToken({ id: user.id });
 
-    const { password_hash, ...publicUser } = user;
+    return {
+      user: toPublic(user),
+      accessToken,
+      refreshToken
+    };
+  }
+  
+  async getSession(userId: string): Promise<PublicUser> {
+    const user = await authRepository.findById(userId);
+
+    if (!user) {
+      throw new NotFoundError('Session invalid or unexisting user');
+    }
+
+    return toPublic(user);
+  }
+
+  async refresh(token: string) {
+    if (!token) {
+      throw new ForbiddenError('Refresh token missing');
+    }
+
+    const decoded = jwtUtils.verifyRefreshToken(token) as { id: string };
+
+    const user = await authRepository.findById(decoded.id);
+    if (!user) {
+      throw new ForbiddenError('User not found or inactive');
+    }
+
+    const accessToken = jwtUtils.generateAccessToken({ id: user.id });
+    const refreshToken = jwtUtils.generateRefreshToken({ id: user.id });
 
     return {
-      user: publicUser,
+      user: toPublic(user),
       accessToken,
       refreshToken
     };

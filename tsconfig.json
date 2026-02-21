@@ -9,7 +9,8 @@
     "skipLibCheck": true,
     "types": ["jest", "node"],
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "typeRoots": ["./node_modules/@types", "./src/types"]
   },
   "include": ["src/**/*", "__tests__/**/*", "deprecated"],
   "exclude": ["node_modules", "dist"]

@@ -10,6 +10,6 @@ export class LoginDTO {
   password!: string;
 }
 
-export class CreateUserDTO extends LoginDTO {
+export class RegisterUserDTO extends LoginDTO {
   // In case we need to
 }

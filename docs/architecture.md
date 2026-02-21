@@ -4,7 +4,18 @@ Questo documento riassume le scelte tecniche e strutturali adottate per la gesti
 
 ## 1. Struttura del Progetto (Domain-Driven)
 
-Abbiamo scelto di organizzare il codice per **Domini** (es. `user`, `publisher`, `content`) invece che per tipo di file. Ogni dominio è autosufficiente.
+Abbiamo scelto di organizzare il codice per **Domini** invece che per tabelle. Ogni dominio è autosufficiente.
+
+Prima le cartelle erano:
+- **`controllers/`**
+- **`services/`**
+- **`repositories/`**
+mentre ora sono:
+- **`domains/`**
+- **`   auth/`**
+- **`   content/`**
+- ecc...
+Ogni cartella contiene all'interno i controller (o cartelle specifiche per tabella)
 
 * **`src/core/`**: Contiene la logica trasversale (database client, classi base).
 * **`src/domains/`**: Contiene la logica di business divisa per entità.
