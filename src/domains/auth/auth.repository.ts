@@ -12,7 +12,6 @@ class AuthRepository extends BaseRepository<
 
   async deleteByEmail(email: string): Promise<void> {
 
-    console.log(config.nodeEnv)
     if (config.nodeEnv != "development" && config.nodeEnv != 'test') {
       throw new ForbiddenError("Cannot execute this operation");
     } 
