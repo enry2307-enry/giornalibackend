@@ -1,7 +1,12 @@
 // src/core/utils/object.utils.ts
 import { FORBIDDEN_PUBLIC_FIELDS, ForbiddenFields } from '../constants/entities';
 
-export function toPublic<T extends object>(entity: T): Omit<T, ForbiddenFields> {
+/**
+ * Rimuove i campi sensibili e opzionalmente trasforma l'oggetto in un nuovo tipo/interfaccia.
+ * @param entity L'oggetto originale
+ * @returns L'oggetto pulito castato a R (default: T senza ForbiddenFields)
+ */
+export function toPublic<T extends object, R = Omit<T, ForbiddenFields>>(entity: T): R {
   // 1. Creiamo una copia per non mutare l'originale
   const cleanEntity = { ...entity } as any;
 
@@ -12,6 +17,6 @@ export function toPublic<T extends object>(entity: T): Omit<T, ForbiddenFields> 
     }
   });
 
-  // 3. Forziamo il ritorno al tipo Omit desiderato
-  return cleanEntity as Omit<T, ForbiddenFields>;
+  // 3. Ritorniamo l'oggetto castato al tipo R richiesto o al default Omit
+  return cleanEntity as R;
 }
