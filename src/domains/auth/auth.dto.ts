@@ -2,11 +2,11 @@
 import { IsEmail, IsString, MinLength } from 'class-validator';
 
 export class LoginDTO {
-  @IsEmail({}, { message: 'Inserisci un indirizzo email valido' })
+  @IsEmail({}, { message: 'Email address is not valid' })
   email!: string;
 
   @IsString()
-  @MinLength(8, { message: 'La password deve contenere almeno 8 caratteri' })
+  @MinLength(8, { message: 'Password must contain atleast 8 characters' })
   password!: string;
 }
 
