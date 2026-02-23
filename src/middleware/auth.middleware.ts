@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { jwtUtils } from '../core/utils/jwt';
 import { ForbiddenError } from '../errors/AppError';
 
-export const protect = async (req: Request, res: Response, next: NextFunction) => {
+export const protect = async (req: Request, _res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return next(new ForbiddenError('Access Denied'));
