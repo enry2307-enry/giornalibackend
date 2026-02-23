@@ -8,18 +8,10 @@ import {
 } from "class-validator";
 import { PublisherType } from "./profiles.types";
 
-export class PublisherCreateDTO {
-  @IsString()
-  @MinLength(5, { message: 'Name length must be at least 5' })
-  @MaxLength(15, { message: 'Name length must be maximum 15' })
-  name!: string;
-
+class PublisherBaseDTO {
   @IsOptional()
   @IsString()
   description?: string;
-
-  @IsEnum(PublisherType)
-  type!: PublisherType;
 
   @IsOptional()
   @IsUrl()
@@ -29,3 +21,15 @@ export class PublisherCreateDTO {
   @IsUrl()
   website_url?: string;
 }
+
+export class PublisherCreateDTO extends PublisherBaseDTO {
+  @IsString()
+  @MinLength(5)
+  @MaxLength(15)
+  name!: string;
+
+  @IsEnum(PublisherType)
+  type!: PublisherType;
+}
+
+export class PublisherUpdateDTO extends PublisherBaseDTO {}

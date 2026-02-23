@@ -20,3 +20,19 @@ export function toPublic<T extends object, R = Omit<T, ForbiddenFields>>(entity:
   // 3. Ritorniamo l'oggetto castato al tipo R richiesto o al default Omit
   return cleanEntity as R;
 }
+
+/**
+ * Rimuove tutte le chiavi che hanno valore 'undefined' da un oggetto.
+ * Utile per preparare i dati per le query di update (PATCH).
+ */
+export function removeUndefined<T extends object>(obj: T): T {
+  const cleanObj = { ...obj };
+  
+  Object.keys(cleanObj).forEach((key) => {
+    if ((cleanObj as any)[key] === undefined) {
+      delete (cleanObj as any)[key];
+    }
+  });
+
+  return cleanObj;
+}

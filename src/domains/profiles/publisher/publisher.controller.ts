@@ -15,5 +15,36 @@ export const publisherController = {
       status: 'success',
       data: { publisher: newPublisher }
     });
+  }),
+
+  update: catchAsync(async (req: Request, res: Response) => {
+    const userId = req.user.id;
+    const publisherUpdateData = req.body;
+
+    const publisher = await publisherService.update(userId, publisherUpdateData);
+
+    res.status(200).json({
+      status: 'success',
+      data: { publisher }
+    });
+  }),
+
+  getById: catchAsync(async (req: Request, res: Response) => {
+    const { publisherId } = req.params;
+    const publisher = await publisherService.getById(publisherId);
+
+    res.status(200).json({
+      status: 'success',
+      data: { publisher }
+    });
+  }),
+
+  delete: catchAsync(async (req: Request, res: Response) => {
+    const userId = req.user.id;
+    const { password } = req.body;
+
+    await publisherService.delete(userId, password);
+
+    res.status(204).send(); 
   })
 };

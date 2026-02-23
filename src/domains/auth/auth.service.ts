@@ -14,8 +14,7 @@ class AuthService {
 
     const newUser = await authRepository.create({
       email: dto.email,
-      password_hash: hashedPassword,
-      status: 'pending_email_verification'
+      password_hash: hashedPassword
     });
 
     // Automatic login

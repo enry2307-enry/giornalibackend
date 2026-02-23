@@ -3,13 +3,11 @@ import app from '../../../app';
 import { authRepository } from '../auth.repository';
 
 describe('Auth System Integration Tests', () => {
-
   const createdEmails: string[] = [];
 
   const generateMockUser = () => {
     const uniqueId = `${Date.now()}_${Math.floor(Math.random() * 1000)}`;
     const email = `test_${uniqueId}@example.com`;
-    
     createdEmails.push(email);
 
     return {
@@ -18,7 +16,6 @@ describe('Auth System Integration Tests', () => {
     };
   };
 
-  
   afterAll(async () => {
     for (const email of createdEmails) {
       await authRepository.deleteByEmail(email);
@@ -28,22 +25,20 @@ describe('Auth System Integration Tests', () => {
   describe('Flow di Autenticazione', () => {
     let accessToken: string;
     let refreshTokenCookie: string;
-    
     const mainUser = generateMockUser();
 
     it('should register a new user', async () => {
-      // 2. Ogni test si crea l'utente se ne ha bisogno (o usa la funzione)
       const newUser = generateMockUser();
       const res = await request(app)
         .post('/api/v1/auth/register')
         .send(newUser);
 
       expect(res.status).toBe(201);
-      expect(res.body.user.email).toBe(newUser.email);
+      // Accesso tramite .data
+      expect(res.body.data.user.email).toBe(newUser.email);
     });
 
     it('should login with the main user', async () => {
-      // Registriamo l'utente prima di testare il login
       await request(app).post('/api/v1/auth/register').send(mainUser);
 
       const res = await request(app)
@@ -54,7 +49,8 @@ describe('Auth System Integration Tests', () => {
         });
 
       expect(res.status).toBe(200);
-      accessToken = res.body.accessToken;
+      // Accesso tramite .data
+      accessToken = res.body.data.accessToken;
       
       const cookies = res.get('Set-Cookie');
       if (cookies) refreshTokenCookie = cookies[0];
@@ -66,7 +62,8 @@ describe('Auth System Integration Tests', () => {
         .set('Authorization', `Bearer ${accessToken}`);
 
       expect(res.status).toBe(200);
-      expect(res.body.user.email).toBe(mainUser.email);
+      // Accesso tramite .data
+      expect(res.body.data.user.email).toBe(mainUser.email);
     });
 
     it('should refresh tokens', async () => {
@@ -75,7 +72,8 @@ describe('Auth System Integration Tests', () => {
         .set('Cookie', [refreshTokenCookie]);
 
       expect(res.status).toBe(200);
-      expect(res.body).toHaveProperty('accessToken');
+      // Verifica proprietà dentro .data
+      expect(res.body.data).toHaveProperty('accessToken');
     });
 
     it('should logout correctly', async () => {
@@ -84,6 +82,7 @@ describe('Auth System Integration Tests', () => {
         .set('Authorization', `Bearer ${accessToken}`)
         .set('Cookie', [refreshTokenCookie]);
 
+      // Lo status 204 non ha body, quindi non serve controllare .data
       expect(res.status).toBe(204);
     });
   });

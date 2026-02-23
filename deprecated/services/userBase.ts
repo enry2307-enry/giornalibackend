@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt';
 
 import { UserBaseRepository } from '../repositories/userBase';
 import { DuplicateError, NotFoundError, ValidationError, ForbiddenError } from '../../src/errors/AppError';
-import { UserBase, UserBaseInsert } from '../../src/types/models'; 
+import { UserBase, UserBaseInsert } from '../../src/types/OLD_models'; 
 
 export class UserBaseService {
   private repo = new UserBaseRepository();

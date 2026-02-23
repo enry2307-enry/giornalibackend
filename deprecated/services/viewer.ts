@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt';
 import { ViewerRepository } from '../repositories/viewer';
 import { UserBaseRepository } from '../repositories/userBase';
 
-import { Viewer, ViewerInsert } from '../../src/types/models';
+import { Viewer, ViewerInsert } from '../../src/types/OLD_models';
 import { DuplicateError, NotFoundError, ValidationError, ForbiddenError } from '../../src/errors/AppError';
 
 export class ViewerService {

@@ -13,7 +13,7 @@ export interface UserBase extends BaseAbstractEntity {
   status: UserStatus;
 }
 
-export type UserBaseInsert = Pick<UserBase, 'email' | 'password_hash' | 'status'>;
+export type UserBaseInsert = Pick<UserBase, 'email' | 'password_hash'>;
 export type PublicUser = Omit<UserBase, 'password_hash' | 'is_deleted'>;
 
 export interface Session {

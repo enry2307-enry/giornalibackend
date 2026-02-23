@@ -16,7 +16,13 @@ export const authController = {
       path: '/'
     });
 
-    res.status(201).json({ user, accessToken });
+    res.status(201).json({ 
+      status: 'success',
+      data: {
+        user, 
+        accessToken
+      } 
+    });
   }),
 
   login: catchAsync(async (req: Request, res: Response) => {
@@ -30,7 +36,13 @@ export const authController = {
       path: '/'
     });
 
-    res.status(200).json({ user, accessToken });
+    res.status(200).json({ 
+      status: 'success',
+      data: {
+        user, 
+        accessToken
+      } 
+    });
   }),
 
   refresh: catchAsync(async (req: Request, res: Response) => {
@@ -45,7 +57,13 @@ export const authController = {
       path: '/'
     });
 
-    res.status(200).json({ user, accessToken });
+    res.status(200).json({ 
+      status: 'success',
+      data: {
+        user, 
+        accessToken
+      } 
+    });
   }),
 
   logout: catchAsync(async (_req: Request, res: Response) => {
@@ -62,6 +80,11 @@ export const authController = {
   getMe: catchAsync(async (req: Request, res: Response) => {
     const user = await authService.getSession(req.user.id);
 
-    res.status(200).json({ user });
+    res.status(200).json({ 
+      status: 'success',
+      data: {
+        user
+      } 
+    });
   }),
 };

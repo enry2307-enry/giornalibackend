@@ -28,3 +28,7 @@ export type PublisherInsert = Pick<
   Publisher,
   'user_id' | 'name' | 'description' | 'profile_image_url' | 'website_url' | 'type'
 >;
+export type PublisherUpdate = Pick<
+  Publisher,
+  'description' | 'website_url' | 'profile_image_url'
+>
