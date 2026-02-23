@@ -1,15 +1,25 @@
-// types/RepositoryTypes.ts
-export class RepositoryError extends Error {
+import { AppError } from '../errors/AppError';
+
+/**
+ * Errore tecnico del database.
+ * Mappa a un 500 perché indica un fallimento dell'infrastruttura.
+ */
+export class RepositoryError extends AppError {
   constructor(message: string, public readonly cause?: unknown) {
-    super(message);
+    super(message, 500, 'DATABASE_ERROR');
     this.name = 'RepositoryError';
   }
 }
 
-export class NotFoundError extends RepositoryError {
-  constructor(resource: string, id: string) {
+/**
+ * Errore di dominio: la risorsa cercata non esiste.
+ * NON estende AppError per evitare "leaking" di HTTP status nel repository.
+ * Sarà il middleware a mapparlo a un 404.
+ */
+export class EntityNotFoundError extends Error {
+  constructor(public resource: string, public id: string) {
     super(`${resource} with id ${id} not found`);
-    this.name = 'NotFoundError';
+    this.name = 'EntityNotFoundError';
   }
 }
 
