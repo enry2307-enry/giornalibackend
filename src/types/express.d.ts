@@ -1,4 +1,5 @@
 import { PublicUser } from '../domains/auth/auth.types';
+import { ApiResponse } from '../core/types/api.types';
 
 declare global {
   namespace Express {
@@ -6,6 +7,9 @@ declare global {
       user: {
         id: string;
       };
+    }
+    interface Response {
+      json<T>(data: ApiResponse<T>): this;
     }
   }
 }
