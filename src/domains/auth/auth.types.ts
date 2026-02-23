@@ -1,7 +1,11 @@
-// src/domains/auth/auth.types.ts
 import { BaseAbstractEntity } from "../../types/baseEntity";
 
-export type UserStatus = 'valid' | 'pending_email_verification' | 'inactive' | 'penalty';
+export enum UserStatus {
+  VALID = 'valid',
+  PENDING_EMAIL_VERIFICATION = 'pending_email_verification',
+  INACTIVE = 'inactive',
+  PENALTY = 'penalty'
+}
 
 export interface UserBase extends BaseAbstractEntity {
   email: string;
