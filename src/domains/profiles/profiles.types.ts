@@ -32,3 +32,12 @@ export type PublisherUpdate = Pick<
   Publisher,
   'description' | 'website_url' | 'profile_image_url'
 >
+
+export interface Viewer extends BaseAbstractEntity {
+	user_id: string; // FK UserBase
+	username: string;
+	description?: string | null;
+	profile_image_url?: string | null;
+}
+export type ViewerInsert = Pick<Viewer, 'user_id' | 'username' | 'description' | 'profile_image_url'>
+export type ViewerUpdate = Pick<Viewer, 'description' | 'profile_image_url'>

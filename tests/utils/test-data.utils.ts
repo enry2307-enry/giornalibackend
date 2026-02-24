@@ -30,3 +30,9 @@ export const generateMockPublisher = () => ({
   website_url: 'https://test-publisher.com',
   profile_image_url: 'https://test-publisher.com/logo.png'
 });
+
+export const generateMockViewer = () => ({
+  username: `Viewer_${Math.floor(Math.random() * 10000)}`,
+  description: 'Questa è una descrizione di test per il viewer.',
+  profile_image_url: 'https://test-viewer.com/logo.png'
+});

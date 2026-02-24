@@ -1,9 +1,10 @@
 import { BaseRepository } from "../../../core/database/baseRepository";
-import { Publisher, PublisherInsert } from "../profiles.types";
+import { Publisher, PublisherInsert, PublisherUpdate } from "../profiles.types";
 
 class PublisherRepository extends BaseRepository<
   Publisher,
-  PublisherInsert
+  PublisherInsert,
+  PublisherUpdate
 > {
   protected tableName = "publisher";
 }

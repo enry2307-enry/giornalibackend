@@ -10,6 +10,7 @@ class AuthRepository extends BaseRepository<
 > {
   protected tableName = "userbase";
 
+  // this is only used in tests
   async deleteByEmail(email: string): Promise<void> {
 
     if (config.nodeEnv != "development" && config.nodeEnv != 'test') {

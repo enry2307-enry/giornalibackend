@@ -6,7 +6,7 @@ import {
   IsOptional, 
   IsUrl 
 } from "class-validator";
-import { PublisherType } from "./profiles.types";
+import { PublisherType } from "../profiles.types";
 
 class PublisherBaseDTO {
   @IsOptional()
@@ -30,6 +30,13 @@ export class PublisherCreateDTO extends PublisherBaseDTO {
 
   @IsEnum(PublisherType)
   type!: PublisherType;
+}
+
+export class PublisherDeleteDTO {
+  @IsString()
+  @MinLength(5)
+  @MaxLength(50)
+  password!: string;
 }
 
 export class PublisherUpdateDTO extends PublisherBaseDTO {}

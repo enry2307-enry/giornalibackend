@@ -1,55 +1,46 @@
 import bcrypt from 'bcrypt';
+import { EntityNotFoundError } from "../../../types/repository";
+import { BaseService } from "../../../core/services/baseService";
+import { PublisherCreateDTO, PublisherUpdateDTO } from "./publisher.dto";
+import { Publisher, PublisherInsert } from "../profiles.types";
 import { publisherRepository } from "./publisher.repository";
-import { PublisherCreateDTO, PublisherUpdateDTO } from "../profiles.dto";
-import { Publisher, PublisherInsert, PublisherUpdate } from "../profiles.types";
-import { removeUndefined, toPublic } from "../../../core/utils/objects.utils";
-import { UserBase } from "../../auth/auth.types";
-import { NotFoundError, ForbiddenError } from "../../../errors/AppError";
+import { ForbiddenError } from "../../../errors/AppError";
 import { authRepository } from "../../auth/auth.repository";
 
-class PublisherService {
+class PublisherService extends BaseService<
+  Publisher, 
+  PublisherCreateDTO, 
+  PublisherUpdateDTO, 
+  PublisherInsert 
+> {
+  constructor() {
+    super(publisherRepository);
+  }
+
   async create(userId: string, dto: PublisherCreateDTO) {
-    const cleanedData = removeUndefined(dto) as Partial<PublisherInsert>;
-
-    const dataToInsert: PublisherInsert = {
-      ...cleanedData,
-      user_id: userId,
-    } as PublisherInsert;
-
-    return toPublic(await publisherRepository.create(dataToInsert));
+    return super.execCreate(dto, { user_id: userId });
   }
 
   async update(userId: string, dto: PublisherUpdateDTO) {
-    const publisher: Publisher | null = await publisherRepository.findOneWhere({ user_id: userId });
+    const publisher = await this.repository.findOneWhere({ user_id: userId });
 
-    if (!publisher?.id) {
-      throw new NotFoundError('Publisher not found');
+    if (!publisher) {
+      throw new EntityNotFoundError('Publisher', userId); 
     }
-    
-    const dataToUpdate = removeUndefined(dto) as PublisherUpdate;
 
-    return toPublic(await publisherRepository.update(publisher.id, dataToUpdate));
-  }
-
-  async getById(publisherId: string) {
-    return toPublic(await publisherRepository.findById(publisherId));
+    return super.execUpdate(publisher.id, dto);
   }
 
   async delete(userId: string, password: string) {
-    const publisher: Publisher | null = await publisherRepository.findOneWhere({ user_id: userId });
-    if (!publisher?.id) {
-      throw new NotFoundError('Publisher not found');
-    }
+    const publisher = await this.repository.findOneWhere({ user_id: userId });
+    if (!publisher) throw new EntityNotFoundError('Publisher', userId);
 
-    // Need user for password_hash
-    const user: UserBase = await authRepository.findById(userId);
-
+    const user = await authRepository.findById(userId);
     const isMatch = await bcrypt.compare(password, user.password_hash);
-    if (!isMatch) {
-      throw new ForbiddenError('Authentication Failed');
-    }
+    
+    if (!isMatch) throw new ForbiddenError('Authentication Failed');
 
-    await publisherRepository.softDelete(publisher.id);
+    await this.repository.softDelete(publisher.id);
   }
 }
 

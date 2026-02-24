@@ -164,7 +164,8 @@ import { RepositoryError, EntityNotFoundError, FindOptions, QueryOptions } from 
  */
 export abstract class BaseRepository<
   Entity extends { id: string },
-  Insert extends Partial<Entity>
+  Insert extends Partial<Entity>,
+  Update extends Partial<Entity> = Partial<Entity>
 >{
   protected abstract tableName: string;
   protected defaultSelect = '*';
@@ -298,7 +299,7 @@ export abstract class BaseRepository<
     }
   }
 
-  async update(id: string, item: Partial<Entity>): Promise<Entity> {
+  async update(id: string, item: Update): Promise<Entity> {
     try {
       const { data, error } = await supabase
         .from(this.tableName)
