@@ -1,4 +1,4 @@
-import { UserBase, UserBaseInsert } from "./auth.types";
+import { UserBase, UserBaseInsert, UserBaseUpdate } from "./auth.types";
 import { BaseRepository } from "../../core/database/baseRepository";
 import supabase from "../../core/database/supabase";
 import config from "../../config/config";
@@ -6,7 +6,8 @@ import { ForbiddenError } from "../../errors/AppError";
 
 class AuthRepository extends BaseRepository<
   UserBase,
-  UserBaseInsert
+  UserBaseInsert,
+  UserBaseUpdate
 > {
   protected tableName = "userbase";
 

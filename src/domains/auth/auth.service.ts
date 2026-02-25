@@ -2,12 +2,13 @@ import bcrypt from 'bcrypt';
 import { authRepository } from "./auth.repository";
 import { LoginDTO } from './auth.dto';
 import { jwtUtils } from '../../core/utils/jwt';
-import { ForbiddenError, NotFoundError } from '../../errors/AppError';
-import { PublicUser, Session } from './auth.types';
+import { ForbiddenError, NotFoundError, ValidationError } from '../../errors/AppError';
+import { PublicUser, Session, UserBaseUpdate } from './auth.types';
 import { toPublic } from '../../core/utils/objects.utils';
+import { EntityNotFoundError } from '../../types/repository';
 
 class AuthService {
-
+  
   async register(dto: LoginDTO): Promise<Session> {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(dto.password, salt);
@@ -17,9 +18,9 @@ class AuthService {
       password_hash: hashedPassword
     });
 
-    // Automatic login
-    const accessToken = jwtUtils.generateAccessToken({ id: newUser.id });
-    const refreshToken = jwtUtils.generateRefreshToken({ id: newUser.id });
+    const payload = { id: newUser.id, token_version: newUser.token_version };
+    const accessToken = jwtUtils.generateAccessToken(payload);
+    const refreshToken = jwtUtils.generateRefreshToken(payload);
 
     return {
       user: toPublic(newUser),
@@ -29,8 +30,7 @@ class AuthService {
   }
 
   async login(dto: LoginDTO): Promise<Session> {
-
-    const user = await authRepository.findOneWhere({email: dto.email});
+    const user = await authRepository.findOneWhere({ email: dto.email });
     if (!user) {
       throw new NotFoundError('Authentication Failed');
     }
@@ -40,14 +40,36 @@ class AuthService {
       throw new ForbiddenError('Authentication Failed');
     }
 
-    const accessToken = jwtUtils.generateAccessToken({ id: user.id });
-    const refreshToken = jwtUtils.generateRefreshToken({ id: user.id });
+    const payload = { id: user.id, token_version: user.token_version };
+    const accessToken = jwtUtils.generateAccessToken(payload);
+    const refreshToken = jwtUtils.generateRefreshToken(payload);
 
     return {
       user: toPublic(user),
       accessToken,
       refreshToken
     };
+  }
+
+  async updatePassword(userId: string, oldPwd: string, newPsw: string) {
+    const user = await authRepository.findById(userId);
+
+    if (!user) throw new EntityNotFoundError('user', userId);
+
+    const isMatch = await bcrypt.compare(oldPwd, user.password_hash);
+    if (!isMatch) throw new ForbiddenError('Authentication Failed');
+
+    if (oldPwd === newPsw) throw new ValidationError('Old Password and New Password are equal');
+
+    const salt = await bcrypt.genSalt(10);
+    const newPswHash = await bcrypt.hash(newPsw, salt);
+
+    const dataToUpdate: UserBaseUpdate = {
+      password_hash: newPswHash,
+      token_version: user.token_version + 1
+    };
+
+    return toPublic(await authRepository.update(userId, dataToUpdate));
   }
   
   async getSession(userId: string): Promise<PublicUser> {
@@ -65,15 +87,20 @@ class AuthService {
       throw new ForbiddenError('Refresh token missing');
     }
 
-    const decoded = jwtUtils.verifyRefreshToken(token) as { id: string };
+    const decoded = jwtUtils.verifyRefreshToken(token) as { id: string, token_version: number };
 
     const user = await authRepository.findById(decoded.id);
     if (!user) {
       throw new ForbiddenError('User not found or inactive');
     }
 
-    const accessToken = jwtUtils.generateAccessToken({ id: user.id });
-    const refreshToken = jwtUtils.generateRefreshToken({ id: user.id });
+    if (user.token_version !== decoded.token_version) {
+      throw new ForbiddenError('Token version mismatch. Please login again.');
+    }
+
+    const payload = { id: user.id, token_version: user.token_version };
+    const accessToken = jwtUtils.generateAccessToken(payload);
+    const refreshToken = jwtUtils.generateRefreshToken(payload);
 
     return {
       user: toPublic(user),

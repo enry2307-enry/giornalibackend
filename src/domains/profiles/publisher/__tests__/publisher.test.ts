@@ -86,13 +86,13 @@ describe('Publisher CRUD Integration Tests', () => {
   });
 
   describe('DELETE /publishers', () => {
-    it('should fail with wrong password', async () => {
+    it('should fail with password being too simple', async () => {
       const res = await request(app)
         .delete('/api/v1/profiles/publishers')
         .set('Authorization', `Bearer ${authToken}`)
         .send({ password: 'WrongPassword123' });
 
-      expect(res.status).toBe(403);
+      expect(res.status).toBe(400);
     });
 
     it('should delete the publisher profile with correct password', async () => {

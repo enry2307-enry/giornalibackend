@@ -8,11 +8,16 @@ import { errorHandler } from './middleware/errHandler.middleware';
 // Routers
 import { authRouter } from './domains/auth/auth.router';
 import { profileRouter } from './domains/profiles/profiles.router';
-
+import { blacklistMiddleware } from './middleware/blacklist.middleware';
+import { rateLimiterMiddleware } from './middleware/rateLimiter.middleware';
+import { log } from 'console';
 
 const app = express();
 
-// Security & Parsing
+// 1. Indispensabile per rilevare correttamente req.ip dietro proxy
+app.set('trust proxy', 1); 
+
+// 2. Security Headers (Primo livello di difesa)
 app.use(helmet());
 app.use(cors({
   origin: config.nodeEnv === 'production' ? 'https://tuodominio.it' : 'http://localhost:5173',
@@ -21,14 +26,21 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
+// 3. Parsers
 app.use(express.json());
 app.use(cookieParser());
-
-// Routes
+// 4. Custom Security Middlewares (Redis-based)
+// La blacklist prima del rate limiter per risparmiare risorse
+// Esempio di attivazione condizionale
+if (process.env.NODE_ENV === 'production' || process.env.USE_REDIS === 'true') {
+  app.use(blacklistMiddleware);
+  app.use(rateLimiterMiddleware);
+}
+// 5. Routes
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/profiles', profileRouter);
 
-// Global error handler
+// 6. Global error handler
 app.use(errorHandler);
 
 export default app;

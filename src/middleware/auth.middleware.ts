@@ -11,9 +11,12 @@ export const protect = async (req: Request, _res: Response, next: NextFunction) 
   const token = authHeader.split(' ')[1];
 
   try {
-    const decoded = jwtUtils.verifyAccessToken(token) as { id: string };
+    const decoded = jwtUtils.verifyAccessToken(token) as { id: string, token_version: number };
 
-    (req as any).user = { id: decoded.id };
+    (req as any).user = { 
+      id: decoded.id,
+      token_version: decoded.token_version
+    };
     next();
   } catch (error) {
     next(new ForbiddenError('Token expired or invalid'));

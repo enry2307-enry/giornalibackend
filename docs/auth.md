@@ -8,49 +8,54 @@ Abbiamo adottato un sistema **Stateless** basato su due tipologie di JSON Web To
 
 * **Scopo**: Autorizzare le richieste API.
 * **Durata**: Breve (es. 15 minuti).
-* **Trasmissione**: Inviato dal backend nel corpo della risposta JSON al login/refresh.
-* **Gestione Frontend**: Deve essere memorizzato in **memoria volatile** (variabile JS o stato dell'applicazione come Zustand/Redux). Non salvarlo nel localStorage per prevenire attacchi XSS.
-* **Utilizzo**: Inserire nell'header HTTP di ogni richiesta protetta:
-`Authorization: Bearer <token>`
+* **Gestione**: Memorizzato in **memoria volatile** (Zustand/Redux). Mai nel localStorage.
 
 ### 2. Refresh Token
 
-* **Scopo**: Ottenere nuovi Access Token senza richiedere le credenziali all'utente.
+* **Scopo**: Ottenere nuovi Access Token.
 * **Durata**: Lunga (es. 7 giorni).
-* **Trasmissione**: Inviato dal backend tramite header `Set-Cookie`.
-* **Gestione Frontend**: **Automatica**. Il browser memorizza e invia il cookie senza intervento di JavaScript.
-* **Sicurezza**:
-* `HttpOnly`: Non accessibile da script (protezione XSS).
-* `Secure`: Inviato solo su connessioni HTTPS.
-* `SameSite: Strict`: Protezione da attacchi CSRF.
-
-
+* **Sicurezza**: `HttpOnly`, `Secure`, `SameSite: Strict`.
 
 ---
 
-## Flussi di Comunicazione (Consigli per il Frontend)
+## Invalidamento Sessioni (Token Versioning)
 
-### 1. Gestione della Scadenza (Axios Interceptors)
+Per superare il limite della natura stateless dei JWT (impossibilità di revoca immediata), abbiamo implementato il **Token Versioning**.
 
-Si consiglia di utilizzare un **interceptor** di risposta per gestire automaticamente l'errore `401 Unauthorized` (Token scaduto):
+### Funzionamento
 
-1. Se una richiesta fallisce con `401`, il frontend deve mettere in "pausa" le richieste in uscita.
-2. Eseguire una chiamata `POST /api/v1/auth/refresh`.
-3. Se il refresh ha successo, aggiornare l'Access Token in memoria e rieseguire la richiesta fallita originariamente.
-4. Se il refresh fallisce (cookie scaduto), reindirizzare l'utente al `/login`.
+1. **Database**: Ogni utente ha un campo `tokenVersion` (integer, default `0`).
+2. **Payload JWT**: Sia l'Access che il Refresh Token contengono il campo `version`.
+3. **Validazione**: Durante ogni richiesta, il middleware verifica che la `version` nel token corrisponda esattamente al `tokenVersion` salvato nel database.
+4. **Revoca Globale**: Incrementando il `tokenVersion` nel DB (es. in caso di cambio password o "Logout da tutti i dispositivi"), tutti i token precedentemente emessi diventano istantaneamente invalidi.
 
-### 2. Persistenza della Sessione al Refresh (F5)
+---
 
-Poiché l'Access Token è in memoria, si perde al ricaricamento della pagina:
+## Sanitizzazione e Sicurezza Input
 
-* Al caricamento dell'App (es. in un `useEffect` o `App Init`), chiamare immediatamente `POST /auth/refresh`.
-* Se il server risponde positivamente, l'utente è loggato silenziosamente e l'app recupera lo stato.
+Tutti i dati in entrata passano attraverso un middleware di sanitizzazione proattiva prima della validazione dei DTO.
 
-### 3. Logout
+### Middleware di Sanitizzazione
 
-* Chiamare l'endpoint `POST /auth/logout`.
-* Il backend invierà l'istruzione `clearCookie` per rimuovere il Refresh Token.
-* Il frontend deve poi svuotare l'Access Token dalla memoria e pulire lo stato globale.
+Il sistema utilizza la libreria `validator` per trasformare stringhe potenzialmente pericolose in entità HTML innocue, prevenendo attacchi **XSS (Cross-Site Scripting)**.
+
+#### Trasformazione Caratteri (Escape)
+
+La funzione di escape converte i caratteri speciali secondo la seguente mappatura:
+
+| Carattere Originale | Entità Trasformata | Scopo |
+| --- | --- | --- |
+| `<` | `&lt;` | Impedisce l'apertura di tag HTML/Script |
+| `>` | `&gt;` | Impedisce la chiusura di tag HTML |
+| `&` | `&amp;` | Neutralizza riferimenti a entità |
+| `"` | `&quot;` | Previene l'uscita da attributi HTML (es. `value="..."`) |
+| `'` | `&#x27;` | Previene vulnerabilità negli attributi con apici singoli |
+| `/` | `&#x2F;` | Impedisce la chiusura di tag in contesti vulnerabili |
+
+### Regole di Applicazione
+
+* **Esclusione Password**: Il campo `password` (e relativi campi sensibili) viene esplicitamente ignorato dalla sanitizzazione per evitare di corrompere caratteri speciali legittimi e impedire errori di login.
+* **Whitelisting**: Grazie a `class-validator`, i campi non definiti nel DTO vengono rimossi automaticamente (`whitelist: true`), prevenendo attacchi di **Mass Assignment**.
 
 ---
 
@@ -58,8 +63,13 @@ Poiché l'Access Token è in memoria, si perde al ricaricamento della pagina:
 
 | Metodo | Endpoint | Input | Output | Note |
 | --- | --- | --- | --- | --- |
-| `POST` | `/auth/login` | Email, Password | `User`, `AccessToken` | Imposta il `refreshToken` nel cookie. |
-| `POST` | `/auth/register` | "Email, Password" | `"User, AccessToken"` |Crea l'account e logga l'utente.
-| `POST` | `/auth/refresh` | (Cookie) | `User`, `AccessToken` | Emette nuovi token (Rotazione). |
-| `POST` | `/auth/logout` | (Cookie) | Success Message | Cancella il cookie lato browser. |
-| `GET` | `/auth/me` | AccessToken | `User` | Verifica la validità dei dati utente. |
+| `POST` | `/auth/login` | Email, Password | `User`, `AccessToken` | Imposta `refreshToken` nel cookie. |
+| `POST` | `/auth/refresh` | (Cookie) | `User`, `AccessToken` | Esegue la rotazione e verifica la `version`. |
+| `POST` | `/auth/logout` | (Cookie) | Success | Cancella il cookie. |
+| `PATCH` | `/auth/security/reset` | Password | Success | Incrementa `tokenVersion` (Logout Globale). |
+
+---
+
+### Note per il futuro
+
+* In caso di necessità di accettare HTML (es. editor di testo), utilizzare `DOMPurify` invece dell'escape globale per un filtraggio granulare dei tag ammessi.

@@ -87,4 +87,16 @@ export const authController = {
       } 
     });
   }),
+
+  updatePassword: catchAsync(async (req: Request, res: Response) => {
+    const { oldPassword, newPassword } = req.body;
+    const user = await authService.updatePassword(req.user.id, oldPassword, newPassword);
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        user
+      }
+    });
+  }),
 };

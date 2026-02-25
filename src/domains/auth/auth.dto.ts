@@ -1,13 +1,19 @@
 // domains/auth/auth.dto.ts
-import { IsEmail, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsString, Matches, MinLength } from 'class-validator';
+import { AUTH_CONSTANTS } from '../../core/constants/auth.constants';
 
-export class LoginDTO {
+export class SecureOperationDTO {
+  @IsString()
+  @MinLength(AUTH_CONSTANTS.PASSWORD.MIN_LENGTH)
+  @Matches(AUTH_CONSTANTS.PASSWORD.REGEX, { 
+    message: AUTH_CONSTANTS.PASSWORD.ERROR_MESSAGE 
+  })
+  password!: string;
+}
+
+export class LoginDTO extends SecureOperationDTO {
   @IsEmail({}, { message: 'Email address is not valid' })
   email!: string;
-
-  @IsString()
-  @MinLength(8, { message: 'Password must contain atleast 8 characters' })
-  password!: string;
 }
 
 export class RegisterUserDTO extends LoginDTO {

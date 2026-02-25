@@ -7,6 +7,7 @@ import {
   IsUrl 
 } from "class-validator";
 import { PublisherType } from "../profiles.types";
+import { SecureOperationDTO } from "../../auth/auth.dto";
 
 class PublisherBaseDTO {
   @IsOptional()
@@ -32,11 +33,6 @@ export class PublisherCreateDTO extends PublisherBaseDTO {
   type!: PublisherType;
 }
 
-export class PublisherDeleteDTO {
-  @IsString()
-  @MinLength(5)
-  @MaxLength(50)
-  password!: string;
-}
+export class PublisherDeleteDTO extends SecureOperationDTO {}
 
 export class PublisherUpdateDTO extends PublisherBaseDTO {}

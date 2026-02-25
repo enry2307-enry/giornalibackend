@@ -5,6 +5,7 @@ import {
   IsOptional, 
   IsUrl 
 } from "class-validator";
+import { SecureOperationDTO } from "../../auth/auth.dto";
 
 class ViewerBaseDTO {
   @IsOptional()
@@ -25,9 +26,4 @@ export class ViewerCreateDTO extends ViewerBaseDTO {
 
 export class ViewerUpdateDTO extends ViewerBaseDTO {}
 
-export class ViewerDeleteDTO {
-  @IsString()
-  @MinLength(5)
-  @MaxLength(50)
-  password!: string;
-}
+export class ViewerDeleteDTO extends SecureOperationDTO {}
