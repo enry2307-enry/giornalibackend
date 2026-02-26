@@ -299,7 +299,7 @@ export abstract class BaseRepository<
     }
   }
 
-  async update(id: string, item: Update): Promise<Entity> {
+  async update(id: string, item: Partial<Update>): Promise<Entity> {
     try {
       const { data, error } = await supabase
         .from(this.tableName)

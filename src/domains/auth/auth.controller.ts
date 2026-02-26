@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { authService } from './auth.service';
 import { catchAsync } from '../../utils/catchAsync';
 import config from '../../config/config';
+import { ValidationError } from '../../errors/AppError';
 
 export const authController = {
   
@@ -24,7 +25,7 @@ export const authController = {
       } 
     });
   }),
-
+  
   login: catchAsync(async (req: Request, res: Response) => {
     const { user, accessToken, refreshToken } = await authService.login(req.body);
 
@@ -99,4 +100,29 @@ export const authController = {
       }
     });
   }),
+
+  sendVerificationEmail: catchAsync(async (req: Request, res: Response) => {
+    await authService.sendVerificationEmail(req.user.id);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Confirmation email sent. Please check your inbox'
+    });
+  }),
+
+  verifyEmail: catchAsync(async (req: Request, res: Response) => {
+    const { code } = req.query;
+
+    // Validazione rapida. Probabilmente scalerà in futuro
+    if (!code || typeof code !== 'string') {
+      throw new ValidationError('Verification code is required');
+    }
+
+    await authService.verifyEmail(code);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Email verified successfully. You can now access all features.'
+    });
+  })
 };

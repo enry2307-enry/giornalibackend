@@ -3,9 +3,10 @@ import { authRepository } from "./auth.repository";
 import { LoginDTO } from './auth.dto';
 import { jwtUtils } from '../../core/utils/jwt';
 import { ForbiddenError, NotFoundError, ValidationError } from '../../errors/AppError';
-import { PublicUser, Session, UserBaseUpdate } from './auth.types';
+import { PublicUser, Session, UserActionStatus, UserActionToken, UserActionType, UserBaseUpdate, UserStatus } from './auth.types';
 import { toPublic } from '../../core/utils/objects.utils';
-import { EntityNotFoundError } from '../../types/repository';
+import { userActionTokenRepository } from './actionToken.repository';
+
 
 class AuthService {
   
@@ -21,6 +22,8 @@ class AuthService {
     const payload = { id: newUser.id, token_version: newUser.token_version };
     const accessToken = jwtUtils.generateAccessToken(payload);
     const refreshToken = jwtUtils.generateRefreshToken(payload);
+
+    await this.sendVerificationEmail(newUser.id);
 
     return {
       user: toPublic(newUser),
@@ -54,8 +57,6 @@ class AuthService {
   async updatePassword(userId: string, oldPwd: string, newPsw: string) {
     const user = await authRepository.findById(userId);
 
-    if (!user) throw new EntityNotFoundError('user', userId);
-
     const isMatch = await bcrypt.compare(oldPwd, user.password_hash);
     if (!isMatch) throw new ForbiddenError('Authentication Failed');
 
@@ -64,7 +65,7 @@ class AuthService {
     const salt = await bcrypt.genSalt(10);
     const newPswHash = await bcrypt.hash(newPsw, salt);
 
-    const dataToUpdate: UserBaseUpdate = {
+    const dataToUpdate = {
       password_hash: newPswHash,
       token_version: user.token_version + 1
     };
@@ -74,10 +75,6 @@ class AuthService {
   
   async getSession(userId: string): Promise<PublicUser> {
     const user = await authRepository.findById(userId);
-
-    if (!user) {
-      throw new NotFoundError('Session invalid or unexisting user');
-    }
 
     return toPublic(user);
   }
@@ -90,9 +87,6 @@ class AuthService {
     const decoded = jwtUtils.verifyRefreshToken(token) as { id: string, token_version: number };
 
     const user = await authRepository.findById(decoded.id);
-    if (!user) {
-      throw new ForbiddenError('User not found or inactive');
-    }
 
     if (user.token_version !== decoded.token_version) {
       throw new ForbiddenError('Token version mismatch. Please login again.');
@@ -107,6 +101,48 @@ class AuthService {
       accessToken,
       refreshToken
     };
+  }
+
+  async sendVerificationEmail(userId: string) {
+    const user = await authRepository.findById(userId);
+
+    if (user.status === UserStatus.ACTIVE) {
+      throw new ValidationError('Email already verified');
+    }
+
+    // Revoca token precedenti dello stesso tipo
+    await userActionTokenRepository.revokePreviousTokens(userId, UserActionType.EMAIL_VERIFICATION);
+
+    
+    const actionToken = await userActionTokenRepository.create({
+      user_id: userId,
+      type: UserActionType.EMAIL_VERIFICATION
+    }); // nel db ci sono questi DEFAULT status='pending' e expires_at=now()+interval '15 minutes'
+
+    const code = actionToken.code;
+    // TODO: Logica invio email
+  }
+
+  async verifyEmail(code: string) {
+    // Ricerca token valido (non scaduto e con status='pending')
+    const actionToken = await userActionTokenRepository.findValidTokenByCode(
+      code, 
+      UserActionType.EMAIL_VERIFICATION
+    );
+
+    if (!actionToken) {
+      throw new NotFoundError('Token invalid, expired or already verified');
+    }
+
+    // Aggiornamento stato token
+    await userActionTokenRepository.update(actionToken.id, { 
+      status: UserActionStatus.COMPLETED 
+    });
+
+    // Attivazione utente
+    await authRepository.update(actionToken.user_id, { 
+      status: UserStatus.ACTIVE 
+    });
   }
 }
 
