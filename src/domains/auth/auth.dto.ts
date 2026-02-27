@@ -16,6 +16,16 @@ export class LoginDTO extends SecureOperationDTO {
   email!: string;
 }
 
+export class RequestPasswordResetDTO {
+  @IsEmail({}, { message: 'Email address is not valid' })
+  email!: string;
+}
+
 export class RegisterUserDTO extends LoginDTO {
   // In case we need to
+}
+
+export class ResetPasswordDTO extends SecureOperationDTO {
+  @IsString()
+  code!: string;
 }

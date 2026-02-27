@@ -1,13 +1,11 @@
 import { PublicUser } from '../domains/auth/auth.types';
 import { ApiResponse } from '../core/types/api.types';
+import { UserSession } from '../domains/auth/auth.types';
 
 declare global {
   namespace Express {
     interface Request {
-      user: {
-        id: string;
-        token_version: string;
-      };
+      user: UserSession
     }
     interface Response {
       json<T>(data: ApiResponse<T>): this;

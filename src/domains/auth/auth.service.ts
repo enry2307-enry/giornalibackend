@@ -1,9 +1,9 @@
 import bcrypt from 'bcrypt';
 import { authRepository } from "./auth.repository";
-import { LoginDTO } from './auth.dto';
+import { LoginDTO, RequestPasswordResetDTO, ResetPasswordDTO } from './auth.dto';
 import { jwtUtils } from '../../core/utils/jwt';
 import { ForbiddenError, NotFoundError, ValidationError } from '../../errors/AppError';
-import { PublicUser, Session, UserActionStatus, UserActionToken, UserActionType, UserBaseUpdate, UserStatus } from './auth.types';
+import { PublicUser, Session, UserActionStatus, UserActionType, UserStatus } from './auth.types';
 import { toPublic } from '../../core/utils/objects.utils';
 import { userActionTokenRepository } from './actionToken.repository';
 
@@ -142,6 +142,50 @@ class AuthService {
     // Attivazione utente
     await authRepository.update(actionToken.user_id, { 
       status: UserStatus.ACTIVE 
+    });
+  }
+
+  async requestPasswordReset(dto: RequestPasswordResetDTO): Promise<void> {
+    const user = await authRepository.findOneWhere({ email: dto.email });
+    
+    if (!user) {
+      return;  // Non lanciamo errori. Il controller ritorna 200ok per evitare User Enumeration
+    }
+
+    // Revoca token di reset precedenti per sicurezza
+    await userActionTokenRepository.revokePreviousTokens(user.id, UserActionType.PASSWORD_RESET);
+
+    const actionToken = await userActionTokenRepository.create({
+      user_id: user.id,
+      type: UserActionType.PASSWORD_RESET
+    });
+
+    const code = actionToken.code;
+    // TODO: send email con il link contenente il code
+  }
+
+  async resetPassword(dto: ResetPasswordDTO): Promise<void> {
+    // Trova e valida il token (scadenza, tipo, status)
+    const actionToken = await userActionTokenRepository.findValidTokenByCode(
+      dto.code,
+      UserActionType.PASSWORD_RESET
+    );
+
+    if (!actionToken) {
+      throw new NotFoundError('Invalid or expired reset token');
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(dto.password, salt);
+
+    // 3. Update Utente + Incremento token_version (per invalidare sessioni vecchie)
+    await authRepository.update(actionToken.user_id, {
+      password_hash: hashedPassword,
+      token_version: 1
+    });
+
+    await userActionTokenRepository.update(actionToken.id, {
+      status: UserActionStatus.COMPLETED
     });
   }
 }

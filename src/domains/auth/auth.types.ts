@@ -4,7 +4,8 @@ export enum UserStatus {
   ACTIVE = 'active',
   PENDING_EMAIL_VERIFICATION = 'pending_email_verification',
   INACTIVE = 'inactive',
-  PENALTY = 'penalty'
+  PENALTY = 'penalty',
+  SUSPENDED = 'suspended'
 }
 
 export interface UserBase extends BaseAbstractEntity {
@@ -45,6 +46,10 @@ export interface UserActionTokenInsert extends Pick<
 export interface UserActionTokenUpdate extends Pick<
   UserActionToken, 
   'status' | 'expires_at'
+> {}
+export interface UserSession extends Pick<
+  UserBase,
+  'id' | 'status' | 'token_version'
 > {}
 
 export interface Session {
