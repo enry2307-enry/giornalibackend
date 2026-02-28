@@ -18,7 +18,6 @@ export const requiresAuth = async (req: Request, _res: Response, next: NextFunct
     return next(new ForbiddenError('Token expired or invalid'));
   }
 
-  
   req.user = { 
     id: decoded.id,
     status: decoded.status,
