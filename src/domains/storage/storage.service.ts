@@ -10,7 +10,7 @@ import config from "../../config/config";
 import { AppError, InternalServerError } from "../../errors/AppError";
 import { s3Client } from "../../core/storage/s3Client";
 
-export const storageService = {
+class StorageService {
   /**
    * Genera una chiave univoca per lo storage e un URL firmato per l'upload (PUT).
    * Il frontend userà questo URL per inviare i byte direttamente a R2.
@@ -40,7 +40,7 @@ export const storageService = {
     } catch (error) {
       throw new InternalServerError("Failed to generate upload signature");
     }
-  },
+  }
 
   /**
    * Genera un URL firmato per la visualizzazione (GET).
@@ -58,7 +58,7 @@ export const storageService = {
     } catch (error) {
       throw new AppError("Failed to generate download signature", 500);
     }
-  },
+  }
 
   /**
    * Elimina fisicamente il file da R2.
@@ -73,8 +73,9 @@ export const storageService = {
     try {
       await s3Client.send(command);
     } catch (error) {
-      // Logghiamo l'errore ma non necessariamente blocchiamo l'esecuzione
       console.error(`Failed to delete file from R2: ${storageKey}`, error);
     }
   }
-};
+}
+
+export const storageService = new StorageService();
