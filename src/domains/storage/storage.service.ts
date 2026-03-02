@@ -5,73 +5,71 @@ import {
   DeleteObjectCommand 
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { v4 as uuidv4 } from 'uuid';
 import config from "../../config/config";
-import { AppError, InternalServerError } from "../../errors/AppError";
-import { s3Client } from "../../core/storage/s3Client";
+import { AppError } from "../../errors/AppError";
 
-class StorageService {
+export class StorageService {
+  private readonly s3Client: S3Client;
+  private readonly bucketName: string;
+
+  constructor() {
+    this.s3Client = new S3Client({
+      region: "auto",
+      endpoint: config.cloudflareR2Endpoint, 
+      credentials: {
+        accessKeyId: config.cloudflareAccessKeyId,
+        secretAccessKey: config.cloudflareSecretAccessKey,
+      },
+    });
+    this.bucketName = config.cloudflareBucketName;
+  }
+
   /**
-   * Genera una chiave univoca per lo storage e un URL firmato per l'upload (PUT).
-   * Il frontend userà questo URL per inviare i byte direttamente a R2.
+   * Upload diretto di un file su R2 dal Backend.
    */
-  async generateUploadUrl(userId: string, contentType: string, originalName: string) {
-    const fileExtension = originalName.split('.').pop() || 'bin';
-    const fileName = `${uuidv4()}.${fileExtension}`;
-    
-    // Organizzazione gerarchica: uploads/ID_UTENTE/UUID.ext
-    const storageKey = `uploads/${userId}/${fileName}`;
-
+  async uploadFile(storageKey: string, fileBuffer: Buffer, contentType: string): Promise<void> {
     const command = new PutObjectCommand({
-      Bucket: config.cloudflareBucketName,
+      Bucket: this.bucketName,
       Key: storageKey,
-      ContentType: contentType,
+      Body: fileBuffer,
+      ContentType: contentType
     });
 
     try {
-      // L'URL scade in 5 minuti (300 secondi)
-      const uploadUrl = await getSignedUrl(s3Client, command, { expiresIn: 300 });
-      
-      return {
-        uploadUrl,
-        storageKey,
-        fileName
-      };
+      await this.s3Client.send(command);
     } catch (error) {
-      throw new InternalServerError("Failed to generate upload signature");
+      console.error("R2 Upload Error:", error);
+      throw new AppError("Failed to upload file to storage", 500);
     }
   }
 
   /**
-   * Genera un URL firmato per la visualizzazione (GET).
-   * Da usare quando il frontend deve mostrare un'immagine o un video.
+   * Genera l'URL temporaneo per la lettura (GET).
    */
-  async generateDownloadUrl(storageKey: string, expiresIn: number = 3600) {
+  async generateDownloadUrl(storageKey: string, expiresIn: number = 3600): Promise<string> {
     const command = new GetObjectCommand({
-      Bucket: config.cloudflareBucketName,
+      Bucket: this.bucketName,
       Key: storageKey,
     });
 
     try {
-      // Di default l'URL scade dopo 1 ora
-      return await getSignedUrl(s3Client, command, { expiresIn });
+      return await getSignedUrl(this.s3Client, command, { expiresIn });
     } catch (error) {
       throw new AppError("Failed to generate download signature", 500);
     }
   }
 
   /**
-   * Elimina fisicamente il file da R2.
-   * Da chiamare quando un post viene eliminato definitivamente o un media rimosso.
+   * Elimina un file da R2.
    */
-  async deleteFile(storageKey: string) {
+  async deleteFile(storageKey: string): Promise<void> {
     const command = new DeleteObjectCommand({
-      Bucket: config.cloudflareBucketName,
+      Bucket: this.bucketName,
       Key: storageKey,
     });
 
     try {
-      await s3Client.send(command);
+      await this.s3Client.send(command);
     } catch (error) {
       console.error(`Failed to delete file from R2: ${storageKey}`, error);
     }

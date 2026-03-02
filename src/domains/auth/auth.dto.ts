@@ -1,10 +1,11 @@
 // domains/auth/auth.dto.ts
-import { IsEmail, IsString, Matches, MinLength } from 'class-validator';
+import { IsEmail, IsString, Matches, MaxLength, MinLength } from 'class-validator';
 import { AUTH_CONSTANTS } from '../../core/constants/auth.constants';
 
 export class SecureOperationDTO {
   @IsString()
   @MinLength(AUTH_CONSTANTS.PASSWORD.MIN_LENGTH)
+  @MaxLength(AUTH_CONSTANTS.PASSWORD.MAX_LENGTH)
   @Matches(AUTH_CONSTANTS.PASSWORD.REGEX, { 
     message: AUTH_CONSTANTS.PASSWORD.ERROR_MESSAGE 
   })

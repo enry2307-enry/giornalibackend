@@ -1,0 +1,33 @@
+import multer from 'multer';
+import { AppError } from '../errors/AppError';
+import { Request } from 'express';
+
+// Utilizziamo MemoryStorage perché carichiamo direttamente su R2 tramite Buffer
+const storage = multer.memoryStorage();
+
+const fileFilter = (_req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+  // Definiamo i tipi ammessi (Immagini, Video, PDF)
+  const allowedMimeTypes = [
+    'image/jpeg', 
+    'image/png', 
+    'image/webp', 
+    'video/mp4', 
+    'video/quicktime', 
+    'application/pdf'
+  ];
+
+  if (allowedMimeTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new AppError(`File type ${file.mimetype} is not supported`, 400));
+  }
+};
+
+export const uploadMiddleware = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: {
+    fileSize: 50 * 1024 * 1024, // Limite 50MB per file (video inclusi)
+    files: 10 // Massimo 20 file come da tuo vincolo DB
+  }
+});
