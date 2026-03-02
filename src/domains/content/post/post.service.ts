@@ -5,7 +5,6 @@ import { storageService } from "../../storage/storage.service";
 import { CreatePostDTO, UpdatePostDTO } from "./post.dto";
 import { ContentStatus } from "./post.types";
 import { MediaType } from "../../storage/storage.types";
-import { AppError } from "../../../errors/AppError";
 import { v4 as uuidv4 } from "uuid";
 
 export class PostService {
