@@ -5,7 +5,6 @@ import { catchAsync } from "../../../utils/catchAsync";
 import { AppError } from "../../../errors/AppError";
 
 export const postController = {
-  // src/domains/post/post.controller.ts
   createPost: catchAsync(async (req: Request, res: Response) => {
     const files = req.files as Express.Multer.File[];
     const { description } = req.body;
@@ -16,13 +15,13 @@ export const postController = {
 
     const { post, hasUploadErrors } = await postService.createPost(req.body, files);
 
-    // Risposta con gestione dell'errore parziale
+    // Questo va sistemato
     res.status(201).json({
       status: hasUploadErrors ? "partial_success" : "success",
       message: hasUploadErrors 
         ? "Post created as DRAFT because some uploads failed. Please check your files." 
         : "Post created successfully.",
-      data: { post }
+      data: { post },
     });
   }),
 

@@ -43,6 +43,6 @@ export class InternalServerError extends AppError {
 
 export class NotImplemented extends AppError {
   constructor(message: string) {
-    super(message, 501, 'NOT_IMPLEMENTED')
+    super(message, 501, 'NOT_IMPLEMENTED');
   }
 }
