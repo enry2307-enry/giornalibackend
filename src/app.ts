@@ -19,6 +19,7 @@ import { postRouter } from './domains/content/post/post.router';
 import { scrollVideoRouter } from './domains/content/scroll-video/scroll-video.router';
 import { storageRouter } from './domains/storage/storage.router';
 import { categoryRouter } from './domains/content/category/category.router';
+import { bookmarkRouter } from './domains/social/bookmark/bookmark.router';
 
 const app = express();
 
@@ -50,6 +51,7 @@ app.use('/api/v1/post', postRouter);
 app.use('/api/v1/scroll-video', scrollVideoRouter);
 app.use('/api/v1/storage', storageRouter);
 app.use('/api/v1/categories', categoryRouter);
+app.use('/api/v1/social/bookmarks', bookmarkRouter);
 
 // 6. Global error handler
 app.use(errorHandler);

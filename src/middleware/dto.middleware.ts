@@ -39,11 +39,15 @@ export const dtoMiddleware = (DtoClass: any) => {
     // è complessa e cruciale, ma dobbiamo spingere sul momentum
     // req.body = sanitizeValue(req.body);
 
-    const dtoInstance = plainToInstance(DtoClass, req.body);
+    const dtoInstance = plainToInstance(
+      DtoClass, 
+      req.body,
+      { enableImplicitConversion: true }
+    );
 
     const errors = await validate(dtoInstance, {
       whitelist: true,
-      forbidNonWhitelisted: true,
+      forbidNonWhitelisted: true
     });
 
     if (errors.length > 0) {
