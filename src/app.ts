@@ -1,15 +1,20 @@
+// src/app.ts
 import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+
+// Config
 import config from './config/config';
+
+// Middlewares
 import { errorHandler } from './middleware/errHandler.middleware';
+import { blacklistMiddleware } from './middleware/blacklist.middleware';
+import { rateLimiterMiddleware } from './middleware/rateLimiter.middleware';
 
 // Routers
 import { authRouter } from './domains/auth/auth.router';
 import { profileRouter } from './domains/profiles/profiles.router';
-import { blacklistMiddleware } from './middleware/blacklist.middleware';
-import { rateLimiterMiddleware } from './middleware/rateLimiter.middleware';
 import { postRouter } from './domains/content/post/post.router';
 import { scrollVideoRouter } from './domains/content/scroll-video/scroll-video.router';
 import { storageRouter } from './domains/storage/storage.router';
