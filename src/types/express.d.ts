@@ -1,10 +1,10 @@
-// src/types/express.d.ts
-import { ApiResponse } from "../core/types/api.types";
-
 declare global {
   namespace Express {
+    interface Request {
+      user: import('../domains/auth/auth.types').UserSession;
+    }
     interface Response {
-      sendSuccess<T>(ApiResponse): void;
+      json<T>(data: import('../core/types/api.types').ApiResponse<T>): this;
     }
   }
 }

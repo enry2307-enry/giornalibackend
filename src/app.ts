@@ -10,7 +10,6 @@ import { authRouter } from './domains/auth/auth.router';
 import { profileRouter } from './domains/profiles/profiles.router';
 import { blacklistMiddleware } from './middleware/blacklist.middleware';
 import { rateLimiterMiddleware } from './middleware/rateLimiter.middleware';
-import { log } from 'console';
 
 const app = express();
 

@@ -21,7 +21,7 @@ export const postController = {
       message: hasUploadErrors 
         ? "Post created as DRAFT because some uploads failed. Please check your files." 
         : "Post created successfully.",
-      data: { post },
+      data: { post }
     });
   }),
 

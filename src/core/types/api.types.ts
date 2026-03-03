@@ -1,6 +1,6 @@
-export interface ApiResponse<T> {
+export interface ApiResponse {
   status: 'success' | 'error' | 'warning';
-  data?: T;  
+  data?: any;
   message?: string;
   meta?: {
     warnings?: Array<{
