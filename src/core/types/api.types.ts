@@ -1,5 +1,5 @@
 export interface ApiResponse<T> {
-  status: 'success' | 'error';
+  status: 'success' | 'error' | 'warning';
   data?: T;  
   message?: string;
   meta?: {
