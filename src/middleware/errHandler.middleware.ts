@@ -5,7 +5,7 @@ import { AppError } from '../errors/AppError';
 import { EntityNotFoundError } from '../types/repository';
 
 export const errorHandler = (
-  err: any, // Cambiato in any per gestire errori non-AppError
+  err: any,
   _req: Request,
   res: Response,
   _next: NextFunction
@@ -14,7 +14,6 @@ export const errorHandler = (
   let code = 'INTERNAL_ERROR';
   let message = err.message || 'Internal Server Error';
 
-  // Mapping degli errori di Dominio -> HTTP
   if (err instanceof AppError) {
     statusCode = err.statusCode;
     code = err.code || 'APP_ERROR';
@@ -23,7 +22,6 @@ export const errorHandler = (
     code = 'NOT_FOUND';
   }
 
-  // Log solo per errori imprevisti (500)
   if (statusCode === 500) {
     console.error('SYSTEM ERROR:', err);
   }
