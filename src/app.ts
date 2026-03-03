@@ -33,7 +33,6 @@ app.use(express.json());
 app.use(cookieParser());
 // 4. Custom Security Middlewares (Redis-based)
 // La blacklist prima del rate limiter per risparmiare risorse
-// Esempio di attivazione condizionale
 if (process.env.NODE_ENV === 'production' || process.env.USE_REDIS === 'true') {
   app.use(blacklistMiddleware);
   app.use(rateLimiterMiddleware);
