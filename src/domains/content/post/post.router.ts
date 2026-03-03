@@ -28,4 +28,9 @@ router.delete(
   postController.deletePost
 );
 
+router.get(
+  "/:id",
+  postController.getById
+)
+
 export default router;

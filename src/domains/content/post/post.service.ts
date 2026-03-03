@@ -60,6 +60,10 @@ export class PostService {
     return await postRepository.update(id, dto);
   }
 
+  async getById(id: string) {
+    return await postRepository.findById(id);
+  }
+
   /**
    * Esegue il soft delete del post
    */

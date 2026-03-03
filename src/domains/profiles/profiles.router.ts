@@ -7,8 +7,11 @@ import { PublisherCreateDTO, PublisherUpdateDTO, PublisherDeleteDTO } from './pu
 import { ViewerCreateDTO, ViewerDeleteDTO, ViewerUpdateDTO } from './viewer/viewer.dto';
 
 import { viewerController } from './viewer/viewer.controller';
+import { requiresActiveUser } from '../../middleware/activeUser.middleware';
 
 export const profileRouter = Router();
+
+profileRouter.use(requiresActiveUser);
 
 //RESTful patterns
 profileRouter.post('/publishers', requiresAuth, dtoMiddleware(PublisherCreateDTO), publisherController.create);     // POST   /api/v1/profiles/publishers

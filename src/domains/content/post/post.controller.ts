@@ -34,6 +34,15 @@ export const postController = {
     });
   }),
 
+  getById: catchAsync(async (req: Request, res: Response) => {
+    const post = await postService.getById(req.params.id);
+
+    res.status(200).json({
+      status: "success",
+      data: { post },
+    });
+  }),
+
   deletePost: catchAsync(async (req: Request, res: Response) => {
     await postService.deletePost(req.params.id);
 
