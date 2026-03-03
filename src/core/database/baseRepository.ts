@@ -1,4 +1,4 @@
-// repositories/BaseRepository.ts
+// src/core/database/BaseRepository.ts
 import supabase from './supabase';
 import { RepositoryError, EntityNotFoundError, FindOptions, QueryOptions } from '../../types/repository';
 
