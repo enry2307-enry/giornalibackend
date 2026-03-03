@@ -3,8 +3,8 @@ import { Router } from "express";
 import { storageController } from "./storage.controller";
 import { requiresAuth } from "../../middleware/auth.middleware";
 
-const router = Router();
+const storageRouter = Router();
 
-router.get("/:id", requiresAuth, storageController.getMedia);
+storageRouter.get("/:id", requiresAuth, storageController.getMedia);
 
-export default router;
+export default storageRouter;

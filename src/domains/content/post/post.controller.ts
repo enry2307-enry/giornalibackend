@@ -13,14 +13,12 @@ export const postController = {
       throw new AppError('At least a description or one file is required', 400);
     }
 
-    const { post, hasUploadErrors } = await postService.createPost(req.body, files);
+    const { post } = await postService.createPost(req.body, files);
 
     // Questo va sistemato
     res.status(201).json({
-      status: hasUploadErrors ? "partial_success" : "success",
-      message: hasUploadErrors 
-        ? "Post created as DRAFT because some uploads failed. Please check your files." 
-        : "Post created successfully.",
+      status: "success",
+      message: "Post created successfully",
       data: { post }
     });
   }),
@@ -47,8 +45,7 @@ export const postController = {
     await postService.deletePost(req.params.id);
 
     res.status(204).json({
-      status: "success",
-      data: null,
+      status: "success"
     });
   })
 }

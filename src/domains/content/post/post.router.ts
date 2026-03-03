@@ -6,31 +6,31 @@ import { dtoMiddleware } from "../../../middleware/dto.middleware";
 import { CreatePostDTO, UpdatePostDTO } from "./post.dto";
 import { requiresAuth } from "../../../middleware/auth.middleware";
 
-const router = Router();
+const postRouter = Router();
 
-router.use(requiresAuth);
+postRouter.use(requiresAuth);
 
-router.post(
+postRouter.post(
   "/",
   uploadMiddleware.array("files", 10),
   dtoMiddleware(CreatePostDTO),
   postController.createPost
 );
 
-router.patch(
+postRouter.patch(
   "/:id",
   dtoMiddleware(UpdatePostDTO),
   postController.updatePost
 );
 
-router.delete(
+postRouter.delete(
   "/:id",
   postController.deletePost
 );
 
-router.get(
+postRouter.get(
   "/:id",
   postController.getById
 )
 
-export default router;
+export default postRouter;

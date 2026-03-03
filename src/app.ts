@@ -10,6 +10,9 @@ import { authRouter } from './domains/auth/auth.router';
 import { profileRouter } from './domains/profiles/profiles.router';
 import { blacklistMiddleware } from './middleware/blacklist.middleware';
 import { rateLimiterMiddleware } from './middleware/rateLimiter.middleware';
+import postRouter from './domains/content/post/post.router';
+import scrollVideoRouter from './domains/content/scroll-video/scroll-video.router';
+import storageRouter from './domains/storage/storage.router';
 
 const app = express();
 
@@ -38,6 +41,9 @@ if (process.env.NODE_ENV === 'production' || process.env.USE_REDIS === 'true') {
 // 5. Routes
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/profiles', profileRouter);
+app.use('/api/v1/post', postRouter);
+app.use('/api/v1/scroll-video', scrollVideoRouter);
+app.use('/api/v1/storage', storageRouter);
 
 // 6. Global error handler
 app.use(errorHandler);
