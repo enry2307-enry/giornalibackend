@@ -4,8 +4,13 @@ import { scrollVideoController } from "./scroll-video.controller";
 import { uploadMiddleware } from "../../../middleware/multer.middleware";
 import { dtoMiddleware } from "../../../middleware/dto.middleware";
 import { CreateScrollVideoDTO, UpdateScrollVideoDTO } from "./scroll-video.dto";
+import { requiresAuth } from "../../../middleware/auth.middleware";
+import { requiresActiveUser } from "../../../middleware/activeUser.middleware";
 
-const scrollVideoRouter = Router();
+export const scrollVideoRouter = Router();
+
+scrollVideoRouter.use(requiresAuth);
+scrollVideoRouter.use(requiresActiveUser);
 
 scrollVideoRouter.post("/", 
   uploadMiddleware.array("files", 5), 
@@ -21,5 +26,3 @@ scrollVideoRouter.patch("/:id",
 );
 
 scrollVideoRouter.delete("/:id", scrollVideoController.deleteScrollVideo);
-
-export default scrollVideoRouter;
