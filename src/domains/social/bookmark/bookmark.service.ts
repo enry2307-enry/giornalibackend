@@ -36,9 +36,6 @@ abstract class BaseBookmarkService <
     /**
      * Qui facciamo sostanzialmente un Upsert
      */
-
-    let performedUpsert: boolean;
-
     if(!bookmark) {
       const dataToInsert = {
         user_id: userId,
