@@ -1,7 +1,6 @@
 import { BaseRepository } from "../../../core/database/baseRepository";
-import { DuplicateError, NotFoundError } from "../../../errors/AppError";
-import { EntityNotFoundError } from "../../../types/repository";
-import { SavePostCreateDTO, SavePostToggleDTO, SaveScrollVideoCreateDTO, SaveScrollVideoToggleDTO } from "./bookmark.dto";
+import { NotFoundError } from "../../../errors/AppError";
+import { SavePostToggleDTO, SaveScrollVideoToggleDTO } from "./bookmark.dto";
 import { savePostRepository, saveScrollVideoRepository } from "./bookmark.repository";
 import { BaseAbstractContentSave, SavePost, SavePostInsert, SavePostUpdate, SaveScrollVideo, SaveScrollVideoInsert, SaveScrollVideoUpdate } from "./bookmark.types";
 
