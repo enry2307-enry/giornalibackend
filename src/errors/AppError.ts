@@ -36,7 +36,7 @@ export class ForbiddenError extends AppError {
 }
 
 export class InternalServerError extends AppError {
-  constructor(message: string) {
+  constructor(message: string = 'Internal Server Error') {
     super(message, 500, 'INTERNAL_SERVER_ERROR');
   }
 }

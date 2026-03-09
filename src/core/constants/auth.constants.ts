@@ -9,5 +9,12 @@ export const AUTH_CONSTANTS = {
   TOKEN: {
     ACCESS_EXPIRY: '15m',
     REFRESH_EXPIRY: '7d',
-  }
+  },
+  REGISTER: {
+    GENERIC_MESSAGE: 'If this email is not registered, you will receive a confirmation shortly.'
+  },
+  LOGIN: {
+    ERROR_MESSAGE: 'Invalid credentials or unverified email. Please check your inbox or request a new verification email.'
+  },
+  BCRYPT_SALT: 10
 };

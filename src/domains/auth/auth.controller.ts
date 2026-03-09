@@ -4,28 +4,16 @@ import { catchAsync } from '../../utils/catchAsync';
 import config from '../../config/config';
 import { ValidationError } from '../../errors/AppError';
 import { toResponse } from '../../core/utils/objects.utils';
+import { AUTH_CONSTANTS } from '../../core/constants/auth.constants';
 
 export const authController = {
   
   register: catchAsync(async (req: Request, res: Response) => {
-    const { user, accessToken, refreshToken } = await authService.register(req.body);
-
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: config.nodeEnv === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      path: '/'
-    });
-
+    await authService.register(req.body);
     res.status(201).json(
-      toResponse({
-        data: {
-          user,
-          accessToken
-        }
-      })
-    );
+      toResponse({ 
+        message: AUTH_CONSTANTS.REGISTER.GENERIC_MESSAGE
+      }));
   }),
   
   login: catchAsync(async (req: Request, res: Response) => {
@@ -87,7 +75,7 @@ export const authController = {
   }),
 
   getMe: catchAsync(async (req: Request, res: Response) => {
-    const user = await authService.getSession(req.user.id);
+    const user = await authService.getMe(req.user.id);
 
     res.status(200).json(
       toResponse({

@@ -2,45 +2,52 @@ import bcrypt from 'bcrypt';
 import { authRepository } from "./auth.repository";
 import { LoginDTO, RequestPasswordResetDTO, ResetPasswordDTO } from './auth.dto';
 import { jwtUtils } from '../../core/utils/jwt';
-import { ForbiddenError, NotFoundError, ValidationError } from '../../errors/AppError';
+import { ForbiddenError, InternalServerError, NotFoundError, ValidationError } from '../../errors/AppError';
 import { PublicUser, Session, UserActionStatus, UserActionType, UserStatus } from './auth.types';
 import { toPublic } from '../../core/utils/objects.utils';
 import { userActionTokenRepository } from './actionToken.repository';
+import { AUTH_CONSTANTS } from '../../core/constants/auth.constants';
 
 
 class AuthService {
   
-  async register(dto: LoginDTO): Promise<Session> {
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(dto.password, salt);
+  async register(dto: LoginDTO): Promise<void> {
+
+    const user = await authRepository.findOneWhere({email: dto.email});
+    if(user) {
+      return;  // il controller invia 201. Evitiamo email enumeration
+    }
+
+    const hashedPassword = await bcrypt.hash(dto.password, AUTH_CONSTANTS.BCRYPT_SALT);
 
     const newUser = await authRepository.create({
       email: dto.email,
       password_hash: hashedPassword
     });
 
-    const payload = { id: newUser.id, token_version: newUser.token_version };
-    const accessToken = jwtUtils.generateAccessToken(payload);
-    const refreshToken = jwtUtils.generateRefreshToken(payload);
-
-    await this.sendVerificationEmail(newUser.id);
-
-    return {
-      user: toPublic(newUser),
-      accessToken,
-      refreshToken
-    };
+    try {
+      await this.sendVerificationEmail(newUser.id);
+    } catch {
+      await authRepository.hardDelete(newUser.id);  // rollback
+      throw new InternalServerError();
+    }
+      
   }
 
   async login(dto: LoginDTO): Promise<Session> {
     const user = await authRepository.findOneWhere({ email: dto.email });
     if (!user) {
-      throw new NotFoundError('Authentication Failed');
+      throw new ForbiddenError(AUTH_CONSTANTS.LOGIN.ERROR_MESSAGE);
+    }
+
+    if(user.status === UserStatus.PENDING_EMAIL_VERIFICATION) {
+      await this.sendVerificationEmail(user.id);
+      throw new ForbiddenError(AUTH_CONSTANTS.LOGIN.ERROR_MESSAGE);
     }
 
     const isMatch = await bcrypt.compare(dto.password, user.password_hash);
     if (!isMatch) {
-      throw new ForbiddenError('Authentication Failed');
+      throw new ForbiddenError(AUTH_CONSTANTS.LOGIN.ERROR_MESSAGE);
     }
 
     const payload = { id: user.id, token_version: user.token_version };
@@ -58,12 +65,11 @@ class AuthService {
     const user = await authRepository.findById(userId);
 
     const isMatch = await bcrypt.compare(oldPwd, user.password_hash);
-    if (!isMatch) throw new ForbiddenError('Authentication Failed');
+    if (!isMatch) throw new ForbiddenError('Wrong password.');
 
-    if (oldPwd === newPsw) throw new ValidationError('Old Password and New Password are equal');
+    if (oldPwd === newPsw) throw new ValidationError('Old and New Password can\'t be equal.');
 
-    const salt = await bcrypt.genSalt(10);
-    const newPswHash = await bcrypt.hash(newPsw, salt);
+    const newPswHash = await bcrypt.hash(newPsw, AUTH_CONSTANTS.BCRYPT_SALT);
 
     const dataToUpdate = {
       password_hash: newPswHash,
@@ -73,7 +79,7 @@ class AuthService {
     return toPublic(await authRepository.update(userId, dataToUpdate));
   }
   
-  async getSession(userId: string): Promise<PublicUser> {
+  async getMe(userId: string): Promise<PublicUser> {
     const user = await authRepository.findById(userId);
 
     return toPublic(user);
@@ -81,7 +87,7 @@ class AuthService {
 
   async refresh(token: string) {
     if (!token) {
-      throw new ForbiddenError('Refresh token missing');
+      throw new ForbiddenError('Refresh token missing.');
     }
 
     const decoded = jwtUtils.verifyRefreshToken(token) as { id: string, token_version: number };
@@ -107,13 +113,12 @@ class AuthService {
     const user = await authRepository.findById(userId);
 
     if (user.status === UserStatus.ACTIVE) {
-      throw new ValidationError('Email already verified');
+      return; // Controller ritorna 200. Evitiamo email enumeration
     }
 
     // Revoca token precedenti dello stesso tipo
     await userActionTokenRepository.revokePreviousTokens(userId, UserActionType.EMAIL_VERIFICATION);
 
-    
     const actionToken = await userActionTokenRepository.create({
       user_id: userId,
       type: UserActionType.EMAIL_VERIFICATION
@@ -131,7 +136,7 @@ class AuthService {
     );
 
     if (!actionToken) {
-      throw new NotFoundError('Token invalid, expired or already verified');
+      throw new NotFoundError('Token invalid, expired or already verified.');
     }
 
     // Aggiornamento stato token
@@ -175,10 +180,9 @@ class AuthService {
       throw new NotFoundError('Invalid or expired reset token');
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(dto.password, salt);
+    const hashedPassword = await bcrypt.hash(dto.password, AUTH_CONSTANTS.BCRYPT_SALT);
 
-    // 3. Update Utente + Incremento token_version (per invalidare sessioni vecchie)
+    // Update Utente + Incremento token_version (per invalidare sessioni vecchie)
     await authRepository.update(actionToken.user_id, {
       password_hash: hashedPassword,
       token_version: 1
