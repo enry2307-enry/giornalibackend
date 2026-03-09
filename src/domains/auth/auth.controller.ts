@@ -3,6 +3,7 @@ import { authService } from './auth.service';
 import { catchAsync } from '../../utils/catchAsync';
 import config from '../../config/config';
 import { ValidationError } from '../../errors/AppError';
+import { toResponse } from '../../core/utils/objects.utils';
 
 export const authController = {
   
@@ -17,13 +18,14 @@ export const authController = {
       path: '/'
     });
 
-    res.status(201).json({ 
-      status: 'success',
-      data: {
-        user, 
-        accessToken
-      } 
-    });
+    res.status(201).json(
+      toResponse({
+        data: {
+          user,
+          accessToken
+        }
+      })
+    );
   }),
   
   login: catchAsync(async (req: Request, res: Response) => {
@@ -37,13 +39,14 @@ export const authController = {
       path: '/'
     });
 
-    res.status(200).json({ 
-      status: 'success',
-      data: {
-        user, 
-        accessToken
-      } 
-    });
+    res.status(200).json(
+      toResponse({
+        data: {
+          user,
+          accessToken
+        }
+      })
+    );
   }),
 
   refresh: catchAsync(async (req: Request, res: Response) => {
@@ -58,13 +61,14 @@ export const authController = {
       path: '/'
     });
 
-    res.status(200).json({ 
-      status: 'success',
-      data: {
-        user, 
-        accessToken
-      } 
-    });
+    res.status(200).json(
+      toResponse({
+        data: {
+          user,
+          accessToken
+        }
+      })
+    );
   }),
 
   logout: catchAsync(async (_req: Request, res: Response) => {
@@ -75,39 +79,36 @@ export const authController = {
       path: '/'
     });
 
-    res.status(204).send();
+    res.status(204).json(
+      toResponse({
+        message: 'Logout success.'
+      })
+    );
   }),
 
   getMe: catchAsync(async (req: Request, res: Response) => {
     const user = await authService.getSession(req.user.id);
 
-    res.status(200).json({ 
-      status: 'success',
-      data: {
-        user
-      } 
-    });
+    res.status(200).json(
+      toResponse({
+        data: { user }
+      })
+    );
   }),
 
   updatePassword: catchAsync(async (req: Request, res: Response) => {
     const { oldPassword, newPassword } = req.body;
     const user = await authService.updatePassword(req.user.id, oldPassword, newPassword);
 
-    res.status(200).json({
-      status: 'success',
-      data: {
-        user
-      }
-    });
+    res.status(200).json(
+      toResponse({data: user})
+    );
   }),
 
   sendVerificationEmail: catchAsync(async (req: Request, res: Response) => {
     await authService.sendVerificationEmail(req.user.id);
 
-    res.status(200).json({
-      status: 'success',
-      message: 'Confirmation email sent. Please check your inbox'
-    });
+    res.status(200).json(toResponse({message: 'Confirmation email sent, please check your inbox'}));
   }),
 
   verifyEmail: catchAsync(async (req: Request, res: Response) => {
@@ -120,9 +121,6 @@ export const authController = {
 
     await authService.verifyEmail(code);
 
-    res.status(200).json({
-      status: 'success',
-      message: 'Email verified successfully. You can now access all features.'
-    });
+    res.status(200).json(toResponse({message: 'Email successfully verified. You can now access all features'}));
   })
 };
