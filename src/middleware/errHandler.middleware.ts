@@ -2,7 +2,7 @@
 // src/middleware/errHandler.middleware.ts
 import { Request, Response, NextFunction } from 'express';
 import { AppError } from '../errors/AppError';
-import { EntityNotFoundError } from '../types/repository';
+import { EntityNotFoundError } from '../core/types/repository.types';
 
 export const errorHandler = (
   err: any,

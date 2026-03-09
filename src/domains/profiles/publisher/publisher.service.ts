@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt';
-import { EntityNotFoundError } from "../../../types/repository";
+import { EntityNotFoundError } from "../../../core/types/repository.types";
 import { BaseService } from "../../../core/services/baseService";
 import { PublisherCreateDTO, PublisherUpdateDTO } from "./publisher.dto";
 import { Publisher, PublisherInsert } from "../profiles.types";

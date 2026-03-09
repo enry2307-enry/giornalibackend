@@ -3,7 +3,7 @@ import { ViewerCreateDTO, ViewerUpdateDTO } from "./viewer.dto";
 import { viewerRepository } from "./viewer.repository";
 import { BaseService } from "../../../core/services/baseService";
 import { Viewer } from "../profiles.types";
-import { EntityNotFoundError } from "../../../types/repository";
+import { EntityNotFoundError } from "../../../core/types/repository.types";
 import { authRepository } from "../../auth/auth.repository";
 import { ForbiddenError } from '../../../errors/AppError';
 

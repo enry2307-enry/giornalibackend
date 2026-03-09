@@ -1,4 +1,4 @@
-import { AppError } from '../errors/AppError';
+import { AppError } from '../../errors/AppError';
 
 /**
  * Errore tecnico del database.
