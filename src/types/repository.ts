@@ -28,6 +28,7 @@ export interface QueryOptions {
   limit?: number;
   offset?: number;
   orderBy?: { column: string; ascending?: boolean };
+  cursor?: string;      // cursor-based (lastId)
 }
 
 export interface FindOptions extends QueryOptions {

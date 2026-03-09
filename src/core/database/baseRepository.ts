@@ -6,6 +6,7 @@ export interface QueryResult<T> {
   data: T;
   meta: {
     count: number;
+    nextCursor?: string;  // id dell'ultimo elemento
   };
 }
 
@@ -32,13 +33,14 @@ export abstract class BaseRepository<
       });
     }
 
-    if (options?.limit !== undefined || options?.offset !== undefined) {
+    if (options?.cursor) {
+      query = query.gt(options.orderBy?.column || 'created_at', options.cursor);
+      query = query.limit(options?.limit || 10);
+    } else if (options?.limit !== undefined || options?.offset !== undefined) {
       const limit = options?.limit || 10;
       const offset = options?.offset || 0;
-      // Supabase .range(from, to) è inclusivo
       query = query.range(offset, offset + limit - 1);
     }
-
     return query;
   }
 
@@ -61,9 +63,15 @@ export abstract class BaseRepository<
       const { data, error, count } = await query;
       
       if (error) throw error;
-      return { 
-        data: data as unknown as Entity[], 
-        meta: { count: count || 0 } 
+
+      const lastItem = data && data.length > 0 ? data[data.length - 1] as any : null;
+      const nextCursor = lastItem && data.length === (options?.limit || 10)
+        ? lastItem[options?.orderBy?.column || 'created_at']
+        : undefined;
+
+      return {
+        data: data as unknown as Entity[],
+        meta: { count: count || 0, nextCursor }
       };
     } catch (error) {
       this.handleError(error, 'findAll');
@@ -88,9 +96,15 @@ export abstract class BaseRepository<
       const { data, error, count } = await query;
       
       if (error) throw error;
+      
+      const lastItem = data && data.length > 0 ? data[data.length - 1] as any : null;
+      const nextCursor = lastItem && data.length === (options?.limit || 10)
+        ? lastItem[options?.orderBy?.column || 'created_at']
+        : undefined;
+
       return {
         data: data as unknown as Entity[],
-        meta: { count: count || 0 }
+        meta: { count: count || 0, nextCursor }
       };
     } catch (error) {
       this.handleError(error, 'findWhere');
@@ -101,7 +115,7 @@ export abstract class BaseRepository<
   // READ METHODS (SINGLE)
   // ===========================
 
-  async findById(id: string, options?: FindOptions): Promise<QueryResult<Entity>> {
+  async findById(id: string, options?: FindOptions): Promise<Entity> {
     try {
       let query = supabase
         .from(this.tableName)
@@ -117,10 +131,7 @@ export abstract class BaseRepository<
         throw error;
       }
 
-      return {
-        data: data as unknown as Entity,
-        meta: { count: 1 }
-      };
+      return data as unknown as Entity;
     } catch (error) {
       if (error instanceof EntityNotFoundError) throw error;
       this.handleError(error, 'findById');
@@ -130,7 +141,7 @@ export abstract class BaseRepository<
   async findOneWhere(
     conditions: Record<string, any>,
     options?: FindOptions
-  ): Promise<QueryResult<Entity | null>> {
+  ): Promise<Entity | null> {
     try {
       let query = supabase
         .from(this.tableName)
@@ -145,10 +156,7 @@ export abstract class BaseRepository<
       const { data, error } = await query.maybeSingle();
       
       if (error) throw error;
-      return {
-        data: data as Entity | null,
-        meta: { count: data ? 1 : 0 }
-      };
+      return data as Entity | null;
     } catch (error) {
       this.handleError(error, 'findOneWhere');
     }
@@ -158,7 +166,7 @@ export abstract class BaseRepository<
   // WRITE METHODS
   // ===========================
 
-  async create(item: Insert): Promise<QueryResult<Entity>> {
+  async create(item: Insert): Promise<Entity> {
     try {
       const { data, error } = await supabase
         .from(this.tableName)
@@ -167,16 +175,13 @@ export abstract class BaseRepository<
         .single();
       
       if (error) throw error;
-      return {
-        data: data as unknown as Entity,
-        meta: { count: 1 }
-      };
+      return data as unknown as Entity;
     } catch (error) {
       this.handleError(error, 'create');
     }
   }
 
-  async update(id: string, item: Partial<Update>): Promise<QueryResult<Entity>> {
+  async update(id: string, item: Partial<Update>): Promise<Entity> {
     try {
       const { data, error } = await supabase
         .from(this.tableName)
@@ -190,10 +195,7 @@ export abstract class BaseRepository<
         if (error.code === 'PGRST116') throw new EntityNotFoundError(this.tableName, id);
         throw error;
       }
-      return {
-        data: data as unknown as Entity,
-        meta: { count: 1 }
-      };
+      return data as unknown as Entity;
     } catch (error) {
       if (error instanceof EntityNotFoundError) throw error;
       this.handleError(error, 'update');
