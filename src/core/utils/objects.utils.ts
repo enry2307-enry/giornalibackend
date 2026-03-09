@@ -1,5 +1,6 @@
 // src/core/utils/object.utils.ts
 import { FORBIDDEN_PUBLIC_FIELDS, ForbiddenFields } from '../constants/entities';
+import { ApiResponse, ApiStatus, Meta } from '../types/api.types';
 
 /**
  * Rimuove i campi sensibili e opzionalmente trasforma l'oggetto in un nuovo tipo/interfaccia.
@@ -35,4 +36,18 @@ export function removeUndefined<T extends object>(obj: T): T {
   });
 
   return cleanObj;
+}
+
+export function toResponse({
+  status = 'success',
+  data,
+  message,
+  meta,
+}: {
+  status?: ApiStatus;
+  data: object;
+  message?: string;
+  meta?: Meta;
+}): ApiResponse {
+  return { status, data: { ...data }, message, meta };
 }
