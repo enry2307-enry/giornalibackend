@@ -45,7 +45,7 @@ export function toResponse({
   meta,
 }: {
   status?: ApiStatus;
-  data: object;
+  data?: object;
   message?: string;
   meta?: Meta;
 }): ApiResponse {
