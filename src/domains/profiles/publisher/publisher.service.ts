@@ -1,47 +1,59 @@
 import bcrypt from 'bcrypt';
-import { EntityNotFoundError } from "../../../core/types/repository.types";
-import { BaseService } from "../../../core/services/baseService";
-import { PublisherCreateDTO, PublisherUpdateDTO } from "./publisher.dto";
-import { Publisher, PublisherInsert } from "../profiles.types";
-import { publisherRepository } from "./publisher.repository";
-import { ForbiddenError } from "../../../errors/AppError";
 import { authRepository } from "../../auth/auth.repository";
+import { DuplicateProfileError, PublisherNotFoundError } from "../profiles.errors";
+import { Publisher } from "../profiles.types";
+import { doesProfileAlreadyExist } from "../shared";
+import { PublisherCreateDTO, PublisherUpdateDTO } from "./publisher.dto";
+import { publisherRepository } from "./publisher.repository";
+import { AuthenticationError } from '../../auth/auth.errors';
 
-class PublisherService extends BaseService<
-  Publisher, 
-  PublisherCreateDTO, 
-  PublisherUpdateDTO, 
-  PublisherInsert 
-> {
-  constructor() {
-    super(publisherRepository);
-  }
-
-  async create(userId: string, dto: PublisherCreateDTO) {
-    return super.execCreate(dto, { user_id: userId });
-  }
-
-  async update(userId: string, dto: PublisherUpdateDTO) {
-    const publisher = await this.repository.findOneWhere({ user_id: userId });
-
-    if (!publisher) {
-      throw new EntityNotFoundError('Publisher', userId); 
-    }
-
-    return super.execUpdate(publisher.id, dto);
-  }
-
-  async delete(userId: string, password: string) {
-    const publisher = await this.repository.findOneWhere({ user_id: userId });
-    if (!publisher) throw new EntityNotFoundError('Publisher', userId);
-
-    const user = await authRepository.findById(userId);
-    const isMatch = await bcrypt.compare(password, user.password_hash);
+class PublisherService {
+  async create(userId: string, dto: PublisherCreateDTO): Promise<Publisher> {
     
-    if (!isMatch) throw new ForbiddenError('Authentication Failed');
+    const duplicated = await doesProfileAlreadyExist(userId);
+    if(duplicated) throw new DuplicateProfileError();
 
-    await this.repository.softDelete(publisher.id);
+    const publisher = await publisherRepository.create({
+      user_id: userId,
+      ...dto
+    }); 
+
+    return publisher;
   }
+
+  async getMe(userId: string): Promise<Publisher> {
+    const publisher = await publisherRepository.findOneWhere({user_id: userId});
+    if(!publisher) throw new PublisherNotFoundError();
+    return publisher;
+  }
+
+  async getById(id: string): Promise<Publisher> {
+    return await publisherRepository.findById(id);
+  }
+
+  async update(userId: string, dto: PublisherUpdateDTO): Promise<Publisher> {
+    const publisher = await publisherRepository.findOneWhere({user_id: userId});
+    if(!publisher) throw new PublisherNotFoundError();
+    
+    return await publisherRepository.update(publisher.id, dto);
+  }
+
+  async delete(userId: string, password: string): Promise<void> {
+    const user = await authRepository.findById(userId);
+
+    const publisher = await publisherRepository.findOneWhere({user_id: userId});
+    if(!publisher) throw new PublisherNotFoundError();
+  
+    if(!bcrypt.compare(password, user.password_hash)) 
+      throw new AuthenticationError();
+    
+    await publisherRepository.softDelete(publisher.id);
+  }
+
+  /**
+   * Servirà un metodo per restituire i documenti ( se la legge lo permetterà )
+   * che dimostrano la verifica del publisher
+   */
 }
 
 export const publisherService = new PublisherService();

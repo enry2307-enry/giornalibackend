@@ -3,6 +3,7 @@
 import { Request, Response } from 'express';
 import { catchAsync } from '../../../utils/catchAsync';
 import { publisherService } from './publisher.service';
+import { ValidationError } from '../../../errors/AppError';
 
 export const publisherController = {
   create: catchAsync(async (req: Request, res: Response) => {
@@ -30,8 +31,10 @@ export const publisherController = {
   }),
 
   getById: catchAsync(async (req: Request, res: Response) => {
-    const { publisherId } = req.params;
-    const publisher = await publisherService.getById(publisherId);
+    const { id } = req.params;
+    if(!id) throw new ValidationError('Missing required URL parameter id');
+
+    const publisher = await publisherService.getById(id);
 
     res.status(200).json({
       status: 'success',

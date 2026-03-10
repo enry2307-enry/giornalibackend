@@ -1,41 +1,53 @@
 import bcrypt from 'bcrypt';
-import { ViewerCreateDTO, ViewerUpdateDTO } from "./viewer.dto";
-import { viewerRepository } from "./viewer.repository";
-import { BaseService } from "../../../core/services/baseService";
-import { Viewer } from "../profiles.types";
-import { EntityNotFoundError } from "../../../core/types/repository.types";
-import { authRepository } from "../../auth/auth.repository";
-import { ForbiddenError } from '../../../errors/AppError';
+import { ViewerCreateDTO, ViewerUpdateDTO } from './viewer.dto';
+import { doesProfileAlreadyExist } from '../shared';import { DuplicateError, ForbiddenError, NotFoundError } from '../../../errors/AppError';
+import { viewerRepository } from './viewer.repository';
+import { Viewer } from '../profiles.types';
+import { authRepository } from '../../auth/auth.repository';
+import { DuplicateProfileError, ViewerNotFoundError } from '../profiles.errors';
+import { AuthenticationError } from '../../auth/auth.errors';
 
-class ViewerService extends BaseService<Viewer, ViewerCreateDTO, ViewerUpdateDTO> {
-  constructor() {
-    super(viewerRepository);
+class ViewerService {
+  async create(userId: string, dto: ViewerCreateDTO): Promise<Viewer> {
+
+    const duplicated = await doesProfileAlreadyExist(userId);  // controlla sia per publisher che per viewer
+    if(duplicated) throw new DuplicateProfileError();
+
+    const viewer = await viewerRepository.create({
+      user_id: userId,
+      ...dto
+    });
+
+    return viewer;
   }
 
-  async create(userId: string, dto: ViewerCreateDTO) {
-    return this.execCreate(dto, { user_id: userId });
+  async getMe(userId: string): Promise<Viewer> {
+    const viewer = await viewerRepository.findOneWhere({user_id: userId});
+    if(!viewer) throw new ViewerNotFoundError();
+    return viewer;
   }
 
-  async updateViewerByUserId(userId: string, dto: ViewerUpdateDTO) {
-    const viewer = await this.repository.findOneWhere({ user_id: userId });
-    
-    if (!viewer) {
-      throw new EntityNotFoundError('Viewer', userId);
-    }
-
-    return this.execUpdate(viewer.id, dto);
+  async getById(id: string) {
+    return await viewerRepository.findById(id);
   }
 
-  async delete(userId: string, password: string) {
-    const viewer = await this.repository.findOneWhere({ user_id: userId });
-    if (!viewer) throw new EntityNotFoundError('Viewer', userId);
+  async update(userId: string, dto: ViewerUpdateDTO): Promise<Viewer> {
+    const viewer = await viewerRepository.findOneWhere({user_id: userId});
+    if(!viewer) throw new ViewerNotFoundError();
 
+    return await viewerRepository.update(viewer.id, {...dto});
+  }
+
+  async delete(userId: string, password: string): Promise<void> {
     const user = await authRepository.findById(userId);
-    const isMatch = await bcrypt.compare(password, user.password_hash);
-    
-    if (!isMatch) throw new ForbiddenError('Authentication Failed');
 
-    await this.repository.softDelete(viewer.id);
+    const viewer = await viewerRepository.findOneWhere({user_id: userId});
+    if(!viewer) throw new ViewerNotFoundError();
+
+    if(!bcrypt.compare(password, user.password_hash)) 
+      throw new AuthenticationError();
+
+    await viewerRepository.softDelete(viewer.id);
   }
 }
 

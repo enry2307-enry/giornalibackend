@@ -18,9 +18,9 @@ export enum PublisherStatus {
 export interface Publisher extends BaseAbstractEntity {
   user_id: string; // FK UserBase
   name: string;
-  description: string | null;
-  profile_image_url: string | null;
-  website_url: string | null;
+  description?: string;
+  profile_image_url?: string;
+  website_url?: string;
   status: PublisherStatus;
   type: PublisherType;
 }

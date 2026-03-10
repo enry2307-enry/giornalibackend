@@ -3,12 +3,21 @@
     "target": "ES2022",
     "module": "commonjs",
     "outDir": "./dist",
-    "strict": true,
+    "strict": true, // già include: strictNullChecks, strictFunctionTypes, strictBindCallApply, strictPropertyInitialization, noImplicitAny, noImplicitThis, alwaysStrict
     "esModuleInterop": true,
     "skipLibCheck": true,
     "types": ["jest", "node", "express", "multer"],
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
+
+    // Extra type safety
+    "noUncheckedIndexedAccess": true,       // arr[0] diventa T | undefined
+    "exactOptionalPropertyTypes": true,     // distingue prop?: T da prop?: T | undefined
+    "noImplicitOverride": true,             // richiede override esplicito nelle classi
+    "noPropertyAccessFromIndexSignature": true, // forza bracket notation su index signatures
+    "noFallthroughCasesInSwitch": true,     // no fallthrough negli switch
+    "noImplicitReturns": true,              // tutte le branch devono ritornare
+    "forceConsistentCasingInFileNames": true
   },
   "include": ["src/**/*", "__tests__/**/*"],
   "exclude": ["node_modules", "dist"]

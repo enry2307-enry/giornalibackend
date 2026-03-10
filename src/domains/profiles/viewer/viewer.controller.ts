@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { catchAsync } from '../../../utils/catchAsync';
 import { viewerService } from './viewer.service';
+import { ValidationError } from '../../../errors/AppError';
 
 export const viewerController = {
   create: catchAsync(async (req: Request, res: Response) => {
@@ -18,6 +19,9 @@ export const viewerController = {
   getById: catchAsync(async (req: Request, res: Response) => {
     const { viewerId } = req.params;
 
+    // andrà verificato con zod probabilmente
+    if(!viewerId) throw new ValidationError('Invalid URL.');
+
     const viewer = await viewerService.getById(viewerId);
 
     res.status(200).json({
@@ -30,7 +34,7 @@ export const viewerController = {
     const userId = req.user.id;
     const data = req.body;
 
-    const viewer = await viewerService.updateViewerByUserId(userId, data);
+    const viewer = await viewerService.update(userId, data);
 
     res.status(200).json({
       status: 'success',
