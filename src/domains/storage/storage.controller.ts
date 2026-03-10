@@ -4,11 +4,13 @@ import { storageService } from "./storage.service";
 import { mediaRepository } from "./media.repository";
 import { catchAsync } from "../../utils/catchAsync";
 import { MediaReadResponse } from "./storage.types";
+import { ValidationError } from "../../errors/AppError";
 
 export const storageController = {
 
   getMedia: catchAsync(async (req: Request, res: Response) => {
     const { id } = req.params;
+    if(!id) throw new ValidationError('Missing required parameter id.');
     
     const media = await mediaRepository.findById(id);
 
