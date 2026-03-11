@@ -43,5 +43,5 @@ export interface MediaReadResponse {
   url: string; // URL firmato temporaneo
   file_name: string;
   type: MediaType;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, any> | undefined;
 }
