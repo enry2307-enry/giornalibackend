@@ -5,7 +5,7 @@ import { AppError } from '../../errors/AppError';
  * Mappa a un 500 perché indica un fallimento dell'infrastruttura.
  */
 export class RepositoryError extends AppError {
-  constructor(message: string, public readonly cause?: unknown) {
+  constructor(message: string, public override readonly cause?: unknown) {
     super(message, 500, 'DATABASE_ERROR');
     this.name = 'RepositoryError';
   }
@@ -28,7 +28,7 @@ export interface QueryOptions {
   limit?: number;
   offset?: number;
   orderBy?: { column: string; ascending?: boolean };
-  cursor?: string;      // cursor-based (lastId)
+  cursor?: string | undefined;      // cursor-based (lastId)
 }
 
 export interface FindOptions extends QueryOptions {

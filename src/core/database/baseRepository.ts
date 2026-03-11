@@ -22,25 +22,57 @@ export abstract class BaseRepository<
     return options?.select?.join(',') || this.defaultSelect;
   }
 
+  /**
+   * Applica opzioni di query generiche su una tabella Supabase.
+   * 
+   * Funzionamento:
+   * 1. Filtra i record soft-deleted: se `options.includeDeleted` è false o undefined,
+   *    aggiunge `is_deleted = false` alla query.
+   * 
+   * 2. Imposta l'ordinamento:
+   *    - Se `options.orderBy` è presente, ordina per `options.orderBy.column` con
+   *      direzione `ascending = options.orderBy.ascending ?? true`.
+   *    - Se `options.orderBy` non è passato, ordina di default per `created_at` ascending.
+   * 
+   * 3. Applica un limite di righe:
+   *    - `options.limit` se passato, altrimenti default = 10.
+   * 
+   * 4. Gestione della paginazione:
+   *    - Cursor-based pagination: se `options.cursor` è presente, aggiunge `.gt(orderColumn, options.cursor)`
+   *      e applica il `limit`.
+   *    - Offset-based pagination: altrimenti usa `options.offset ?? 0` e `.range(offset, offset + limit - 1)`.
+   * 
+   * Cosa aspettarsi:
+   * - La query restituirà sempre al massimo `limit` righe.
+   * - Se non viene passato `orderBy`, l'ordinamento sarà deterministico su `created_at`.
+   * - Cursor e offset funzionano correttamente solo con l'ordinamento impostato.
+   * - I record soft-deleted non vengono inclusi per default, a meno che `includeDeleted = true`.
+   */
   protected applyQueryOptions(query: any, options?: QueryOptions) {
+    // 1. Filtra i record soft-deleted
     if (!options?.includeDeleted) {
       query = query.eq('is_deleted', false);
     }
-    
-    if (options?.orderBy) {
-      query = query.order(options.orderBy.column, { 
-        ascending: options.orderBy.ascending ?? true 
-      });
-    }
 
+    // 2. Determina colonna e direzione per l'ordinamento
+    const orderColumn = options?.orderBy?.column || 'created_at';
+    const ascending = options?.orderBy?.ascending ?? true;
+    query = query.order(orderColumn, { ascending });
+
+    // 3. Limite di default
+    const limit = options?.limit ?? 10;
+
+    // 4. Paginazione
     if (options?.cursor) {
-      query = query.gt(options.orderBy?.column || 'created_at', options.cursor);
-      query = query.limit(options?.limit || 10);
-    } else if (options?.limit !== undefined || options?.offset !== undefined) {
-      const limit = options?.limit || 10;
-      const offset = options?.offset || 0;
+      // Cursor-based pagination
+      query = query.gt(orderColumn, options.cursor);
+      query = query.limit(limit);
+    } else {
+      // Offset-based pagination
+      const offset = options?.offset ?? 0;
       query = query.range(offset, offset + limit - 1);
     }
+
     return query;
   }
 

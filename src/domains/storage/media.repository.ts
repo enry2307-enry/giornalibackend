@@ -8,10 +8,6 @@ export class MediaRepository extends BaseRepository<
 > {
   protected tableName: string = 'media';
 
-  async findByPublisher(publisherId: string): Promise<Media[]> {
-    return this.findWhere({ publisher_id: publisherId, is_deleted: false });
-  }
-
   async findByStorageKey(key: string): Promise<Media | null> {
     return this.findOneWhere({ storage_key: key });
   }
