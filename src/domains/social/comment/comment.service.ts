@@ -51,6 +51,8 @@ class BaseCommentService<T extends BaseRepository<Comment, CommentInsert, Commen
   }
 
   async getReplies(
+    // se il parametro "options" verrà utilizzato anche in altri service
+    // lo convertirò in un'interface per evitare di ripetere il codice
     parentId: string,
     options?: {
       limit?: number;               // massimo numero di reply da restituire (default 10)
@@ -66,7 +68,9 @@ class BaseCommentService<T extends BaseRepository<Comment, CommentInsert, Commen
       includeDeleted: options?.includeDeleted ?? false
     };
 
-    const result = await this.repository.findWhere({ parent_id: parentId }, queryOptions);
+
+    // vedi comment.repository.ts
+    const result = await this.repository.SERVE_QUI({ parent_id: parentId }, queryOptions);
 
     return result;
   }

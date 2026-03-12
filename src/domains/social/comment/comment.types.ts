@@ -31,3 +31,12 @@ export interface CommentInsert extends Pick<
 export interface CommentUpdate extends Partial<
   Pick<Comment, 'content' | 'status'>
 > {}
+
+export interface CommentUnified extends Omit<Comment, 'entity_id' | 'status'>{
+  post_or_video_id: string;
+  entity_type: string;
+  // author_id: string;  // su questo devo pensarci
+  author_name: string;
+  author_avatar: string;
+  profile_type: string;
+}

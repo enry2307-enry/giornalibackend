@@ -3,6 +3,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { AppError } from '../errors/AppError';
 import { EntityNotFoundError } from '../core/types/repository.types';
+import { DatabaseError } from '../errors/DatabaseError';
 
 export const errorHandler = (
   err: any,
@@ -20,6 +21,10 @@ export const errorHandler = (
   } else if (err instanceof EntityNotFoundError) {
     statusCode = 404;
     code = 'NOT_FOUND';
+  } else if (err instanceof DatabaseError) {
+    statusCode = 500;
+    code = 'DATABASE_ERROR';
+    message = 'Internal Server Error';
   }
 
   if (statusCode === 500) {

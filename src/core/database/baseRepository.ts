@@ -6,7 +6,7 @@ export interface QueryResult<T> {
   data: T;
   meta: {
     count: number;
-    nextCursor?: string;  // id dell'ultimo elemento
+    nextCursor?: string; 
   };
 }
 
@@ -191,6 +191,63 @@ export abstract class BaseRepository<
       return data as Entity | null;
     } catch (error) {
       this.handleError(error, 'findOneWhere');
+    }
+  }
+
+  /**
+   * Per ora questo metodo lo lascio protected. Può esser pericoloso
+   * fare join complessi dinamici in questo modo
+   * 
+   * @param tableName Nome della tabella su cui fare il join
+   * @param joinSelect Un array di stringhe campi da cui fare il select dalla seconda tabella
+   * @param conditions Un object di condizioni {email: 'la_mia_email@gmail.com'} oppure {'email': 'la_mia_email@gmail.com'}s
+   * @param options Vedi FindOptions
+   * @returns l'innerjoin specificato
+   */
+  protected async innerJoin<Joined>(
+    tableName: string,
+    joinSelect?: string[],
+    conditions?: Record<string, any>,
+    options?: FindOptions
+  ): Promise<QueryResult<(Entity & { [key: string]: Joined })[]>> {
+
+    try {
+
+      const baseSelect = this.getSelectString(options)
+      const joinFields = joinSelect?.join(',') ?? '*'
+
+      let query = supabase
+        .from(this.tableName)
+        .select(
+          `${baseSelect}, ${tableName}!inner(${joinFields})`,
+          { count: 'exact' }
+        )
+
+      if (conditions) {
+        for (const [key, value] of Object.entries(conditions)) {
+          query = query.eq(key, value)
+        }
+      }
+
+      query = this.applyQueryOptions(query, options)
+
+      const { data, error, count } = await query
+
+      if (error) throw error
+
+      const lastItem = data && data.length > 0 ? data[data.length - 1] as any : null
+      const nextCursor =
+        lastItem && data.length === (options?.limit || 10)
+          ? lastItem[options?.orderBy?.column || 'created_at']
+          : undefined
+
+      return {
+        data: data as any,
+        meta: { count: count || 0, nextCursor }
+      }
+
+    } catch (error) {
+      this.handleError(error, 'innerJoin')
     }
   }
 
