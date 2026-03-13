@@ -13,7 +13,7 @@ export const authController = {
     res.status(201).json(
       toResponse({ 
         message: AUTH_CONSTANTS.REGISTER.GENERIC_MESSAGE
-      }));
+    }));
   }),
   
   login: catchAsync(async (req: Request, res: Response) => {

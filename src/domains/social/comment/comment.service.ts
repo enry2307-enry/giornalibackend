@@ -9,7 +9,7 @@
  * Abbiamo sia il vantaggio di avere polimorfismo, ma anche di avere le strong
  * foreign key di PostGres ( visto che effettivamente sono due tabelle distinte ).
  */
-import { BaseRepository, QueryResult } from "../../../core/database/baseRepository";
+import { QueryResult } from "../../../core/database/baseRepository";
 import { ForbiddenError } from "../../../errors/AppError";
 import { authRepository } from "../../auth/auth.repository";
 import { CommentCreateDTO, CommentEditDTO} from "./comment.dto";
@@ -59,7 +59,7 @@ class BaseCommentService {
     return await this.repository.update(comment.id, dataToUpdate);
   }
 
-  async getReplies(
+  async getRepliesOfComment(
     parentId: string,
     options?: {
       cursor?: string | undefined;              // valore del campo ordinato per continuare la paginazione
@@ -75,10 +75,34 @@ class BaseCommentService {
       orderBy: { column: 'created_at', ascending: true },
     };
 
-    return await this.repository.getRepliesWithAuthor({entityType: 'comment', entityId: parentId}, queryOptions);
+    return await this.repository.getRepliesWithAuthor({
+        entityType: 'comment',
+        entityId: parentId
+      }, 
+      queryOptions
+    );
   }
 
-  async delete(userId: string, id: string) {
+  async getComments(
+    entityId: string,
+    entityType: 'post' | 'scrollvideo',
+    options?: {
+      cursor?: string | undefined
+    }
+  ): Promise<QueryResult<PublicComment[]>> {
+    const queryOptions = {
+      limit: 10,
+      cursor: options?.cursor,
+      orderBy: { column: 'created_at', ascending: true },
+    };
+
+    return await this.repository.getRepliesWithAuthor({
+      entityId: entityId,
+      entityType: entityType
+    }, queryOptions);
+  }
+
+  async deleteComment(userId: string, id: string) {
     const user = await authRepository.findById(userId);
     const comment = await this.repository.findById(id);
 
@@ -86,7 +110,7 @@ class BaseCommentService {
       throw new ForbiddenError('You are not the author of this comment.');
 
     await this.repository.softDelete(id);
-  } 
+  }
 }
 
 export const commentOnPostService = new BaseCommentService(commentOnPostRepository);

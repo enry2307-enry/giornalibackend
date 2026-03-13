@@ -48,7 +48,10 @@ export const commentController = {
     // naturalmente va validato e sanitizzato
     const cursor = req.query['cursor'] as string | undefined;
 
-    const { data, meta } = await commentOnPostService.getReplies(id, {cursor});
+    const { data, meta } = await commentOnPostService.getRepliesOfComment(
+      id, 
+      {cursor}
+    );
 
     res.status(200).json(toResponse({
       data,
@@ -67,13 +70,40 @@ export const commentController = {
     // naturalmente va validato e sanitizzato
     const cursor = req.query['cursor'] as string | undefined;
 
-    const { data, meta } = await commentOnScrollVideoService.getReplies(id, {cursor});
+    const { data, meta } = await commentOnScrollVideoService.getRepliesOfComment(id, {cursor});
+
+    res.status(200).json(toResponse({
+      data,
+      meta
+    }));
+  }),
+
+  // qui manca di prendere i commenti di un post e scrollvideo specifico
+  getPostComments: catchAsync(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    if(!id) throw new ValidationError('Missing required param id.');
+
+    const cursor = req.query['cursor'] as string | undefined;
+
+    const { data, meta } = await commentOnPostService.getComments(id, 'post', {cursor});
+
+    res.status(200).json(toResponse({
+      data,
+      meta
+    }));
+  }),
+
+  getScrollVideoComments: catchAsync(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    if(!id) throw new ValidationError('Missing required param id.');
+
+    const cursor = req.query['cursor'] as string | undefined;
+
+    const { data, meta } = await commentOnScrollVideoService.getComments(id, 'scrollvideo', {cursor});
 
     res.status(200).json(toResponse({
       data,
       meta
     }));
   })
-
-  // qui manca di prendere i commenti di un post e scrollvideo specifico
 }

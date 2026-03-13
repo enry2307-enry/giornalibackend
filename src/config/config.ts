@@ -23,8 +23,8 @@ function requireEnv(key: string): string {
 }
 
 const config: Config = {
-  port: Number(process.env.PORT) || 3000,
-  nodeEnv: process.env.NODE_ENV || 'development',
+  port: Number(process.env['PORT']) || 3000,
+  nodeEnv: process.env['NODE_ENV'] || 'development',
   supabaseUrl: requireEnv('SUPABASE_URL'),
   supabaseKey: requireEnv('SUPABASE_KEY'),
   jwtAccessSecret: requireEnv('JWT_ACCESS_SECRET'),

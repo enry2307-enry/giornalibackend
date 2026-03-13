@@ -5,6 +5,11 @@ import { storageService } from "../storage/storage.service";
 import { StorageUploadError } from "../storage/storage.errors";
 import { MediaType } from "../storage/storage.types";
 import { BaseRepository } from "../../core/database/baseRepository";
+import { authRepository } from "../auth/auth.repository";
+import { Post } from "./post/post.types";
+import { ScrollVideo } from "./scroll-video/scroll-video.types";
+import { publisherRepository } from "../profiles/publisher/publisher.repository";
+import { ForbiddenError, InternalServerError, ValidationError } from "../../errors/AppError";
 
 // Interfaccia per i repository che supportano il linking dei media
 interface LinkableRepository<
@@ -16,12 +21,34 @@ interface LinkableRepository<
 }
 
 export abstract class BaseContentService<
-  T extends { id: string }, 
+  T extends Post | ScrollVideo, 
   TInsert extends Partial<T>, 
   TUpdate extends Partial<T>
 > {
   protected abstract repository: LinkableRepository<T, TInsert, TUpdate>;
   protected abstract storagePrefix: string;
+
+  /**
+   * Controlla se userId è il proprietario del contenuto
+   * @param userId 
+   * @param contentId 
+   * @raises Validation Error se l'user non è un publisher
+   * @raises ForbiddenError se l'user ( e quindi il publisher ) non è il proprietario del post
+   * @returns Il contenuto
+   */
+  protected async ensureOwnershipOfContent(userId: string, contentId: string): Promise<T>{
+    // "mossa" difensiva per evitare contenere inconsistenza di dati ( da errore se non lo trova )
+    await authRepository.findById(userId);
+
+    const publisher = await publisherRepository.findOneWhere({user_id: userId});
+    if(!publisher) throw new ValidationError('You are not a publisher.');
+
+    const content = await this.repository.findById(contentId);
+
+    if(content.publisher_id !== publisher.id) throw new ForbiddenError("You cannot delete a post you are not the author of.");
+
+    return content;
+  }
 
   async create(dto: TInsert & { publisher_id: string }, files?: Express.Multer.File[]): Promise<{ content: T }> {
     const uploadedMedia: any[] = [];
@@ -69,7 +96,8 @@ export abstract class BaseContentService<
     return { content };
   }
 
-  async update(id: string, dto: TUpdate): Promise<T> {
+  async update(userId: string, id: string, dto: TUpdate): Promise<T> {
+    this.ensureOwnershipOfContent(userId, id);
     return await this.repository.update(id, dto);
   }
 
@@ -77,7 +105,8 @@ export abstract class BaseContentService<
     return await this.repository.findById(id);
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(userId: string, id: string): Promise<void> {
+    this.ensureOwnershipOfContent(userId, id);
     await this.repository.softDelete(id);
   }
 }

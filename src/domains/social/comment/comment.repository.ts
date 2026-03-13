@@ -8,7 +8,7 @@ export class GenericCommentRepository extends BaseRepository<
   CommentInsert,
   CommentUpdate
 > {
-  protected override tableName: string = 'commentunified'; 
+  public override tableName: string; 
   protected viewName: string = 'commentunified'
 
   constructor(tableName: string) {

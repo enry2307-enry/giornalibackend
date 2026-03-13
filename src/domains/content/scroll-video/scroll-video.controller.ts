@@ -1,9 +1,10 @@
 // src/domains/content/scroll-video/scroll-video.controller.ts
 import { Request, Response } from "express";
 import { catchAsync } from "../../../utils/catchAsync";
-import { AppError } from "../../../errors/AppError";
+import { AppError, ValidationError } from "../../../errors/AppError";
 import { ApiResponse } from "../../../core/types/api.types";
 import { scrollVideoService } from "./scroll-video.service"; 
+import { toResponse } from "../../../core/utils/objects.utils";
 
 export const scrollVideoController = {
   /**
@@ -13,53 +14,52 @@ export const scrollVideoController = {
     const files = req.files as Express.Multer.File[];
     
     if (!files || files.length === 0) {
-      throw new AppError('A video file is required for ScrollVideo', 400);
+      throw new ValidationError('Atleast one videofile is required for scrollVideo');
     }
 
-    const { content } = await scrollVideoService.create(req.body, files);
+    const scrollVideo = await scrollVideoService.create(req.body, files);
 
-    const response: ApiResponse = {
-      status: 'success',
-      data: { scrollVideo: content },
-      message: "ScrollVideo created successfully"
-    };
-
-    return res.status(201).json(response);
+    return res.status(201).json(toResponse({
+      data: { scrollVideo }
+    }));
   }),
 
   /**
    * Recupera per ID.
    */
   getById: catchAsync(async (req: Request, res: Response) => {
-    const scrollVideo = await scrollVideoService.getById(req.params.id);
+    const { id } = req.params;
+    if(!id) throw new ValidationError('Missing required param id.');
 
-    const response: ApiResponse = {
-      status: 'success',
+    const scrollVideo = await scrollVideoService.getById(id);
+
+    return res.status(200).json(toResponse({
       data: { scrollVideo }
-    };
-
-    return res.status(200).json(response);
+    }));
   }),
 
   /**
    * Aggiorna metadati.
    */
   updateScrollVideo: catchAsync(async (req: Request, res: Response) => {
-    const scrollVideo = await scrollVideoService.update(req.params.id, req.body);
+    const { id } = req.params;
+    if(!id) throw new ValidationError('Missing required param id.');
 
-    const response: ApiResponse = {
-      status: 'success',
+    const scrollVideo = await scrollVideoService.update(req.user.id, id, req.body);
+
+    return res.status(200).json(toResponse({
       data: { scrollVideo }
-    };
-
-    return res.status(200).json(response);
+    }));
   }),
 
   /**
    * Soft delete dello ScrollVideo.
    */
   deleteScrollVideo: catchAsync(async (req: Request, res: Response) => {
-    await scrollVideoService.delete(req.params.id);
+    const { id } = req.params;
+    if(!id) throw new ValidationError('Missing required param id.');
+
+    await scrollVideoService.delete(req.user.id, id);
     return res.status(204).send();
   })
 };

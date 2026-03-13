@@ -2,7 +2,7 @@
 import { Request, Response } from "express";
 import { postService } from "./post.service";
 import { catchAsync } from "../../../utils/catchAsync";
-import { AppError } from "../../../errors/AppError";
+import { AppError, ValidationError } from "../../../errors/AppError";
 
 export const postController = {
   createPost: catchAsync(async (req: Request, res: Response) => {
@@ -13,18 +13,21 @@ export const postController = {
       throw new AppError('At least a description or one file is required', 400);
     }
 
-    const { post } = await postService.createPost(req.body, files);
+    const { content } = await postService.create(req.body, files);
 
     // Questo va sistemato
     res.status(201).json({
       status: "success",
       message: "Post created successfully",
-      data: { post }
+      data: { content }
     });
   }),
 
   updatePost: catchAsync(async (req: Request, res: Response) => {
-    const post = await postService.updatePost(req.params.id, req.body);
+    const { id } = req.params;
+    if(!id) throw new ValidationError('Missing required param id.');
+
+    const post = await postService.update(req.user.id, id, req.body);
 
     res.status(200).json({
       status: "success",
@@ -33,7 +36,10 @@ export const postController = {
   }),
 
   getById: catchAsync(async (req: Request, res: Response) => {
-    const post = await postService.getById(req.params.id);
+    const { id } = req.params;
+    if(!id) throw new ValidationError('Missing required param id.');
+
+    const post = await postService.getById(id);
 
     res.status(200).json({
       status: "success",
@@ -42,7 +48,10 @@ export const postController = {
   }),
 
   deletePost: catchAsync(async (req: Request, res: Response) => {
-    await postService.deletePost(req.params.id);
+    const { id } = req.params;
+    if(!id) throw new ValidationError('Missing required param id.');
+
+    await postService.delete(req.user.id, id);
 
     res.status(204).json({
       status: "success"
