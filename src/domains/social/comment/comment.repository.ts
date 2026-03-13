@@ -1,14 +1,14 @@
-import { BaseRepository } from "../../../core/database/baseRepository";
-import { Comment, CommentInsert, CommentUpdate } from "./comment.types";
+import { BaseRepository, QueryResult } from "../../../core/database/baseRepository";
+import { Comment, CommentInsert, CommentUpdate, PublicComment } from "./comment.types";
 import supabase from "../../../core/database/supabase";
 import { FindOptions } from "../../../core/types/repository.types";
 
-class GenericCommentRepository extends BaseRepository<
+export class GenericCommentRepository extends BaseRepository<
   Comment,
   CommentInsert,
   CommentUpdate
 > {
-  protected override tableName: string;
+  protected override tableName: string = 'commentunified'; 
   protected viewName: string = 'commentunified'
 
   constructor(tableName: string) {
@@ -17,14 +17,20 @@ class GenericCommentRepository extends BaseRepository<
   }
 
   async getRepliesWithAuthor(
-    commentId: string,
+    parameters: {
+      entityType: 'post' | 'scrollvideo' | 'comment',  // non so se mi piacciono hard coded qui
+      entityId: string
+    },
     options?: FindOptions
-  ) {
+  ): Promise<QueryResult<PublicComment[]>>{
     try {
+
+      const columnName = parameters.entityType === 'comment' ? 'parent_id' : 'entity_id';
+
       let query = supabase
         .from(this.viewName)
         .select('*')
-        .eq('parent_id', commentId)
+        .eq(columnName, parameters.entityId)
         .eq('is_deleted', false)
         .eq('entity_type', this.tableName);
 
@@ -59,6 +65,7 @@ class GenericCommentRepository extends BaseRepository<
         content: c.content,
         created_at: c.created_at,
         entity_type: c.entity_type,
+        entity_id: parameters.entityId,
         author: {
           id: c.author_id,
           name: c.author_name,

@@ -40,3 +40,16 @@ export interface CommentUnified extends Omit<Comment, 'entity_id' | 'status'>{
   author_avatar: string;
   profile_type: string;
 }
+
+export interface PublicComment {
+  id: string;
+  content: string;
+  created_at: string;
+  entity_type: 'post' | 'scrollvideo' | 'comment';
+  author: {
+    id: string;
+    name: string;
+    avatar: string;
+    type: string;
+  }
+}

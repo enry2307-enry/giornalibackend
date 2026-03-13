@@ -16,4 +16,7 @@ export class CommentCreateDTO extends BaseComment {
   parent_id?: string;
 }
 
-export class CommentEditDTO extends BaseComment {}
+export class CommentEditDTO extends BaseComment {
+  @IsUUID()
+  comment_id!: string;
+}

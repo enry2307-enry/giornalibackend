@@ -49,5 +49,10 @@ export function toResponse({
   message?: string;
   meta?: Meta;
 }): ApiResponse {
-  return { status, data: { ...data }, message, meta };
+  return {
+    status,
+    data: { ...data },
+    ...(message !== undefined && { message }),
+    ...(meta !== undefined && { meta }),
+  };
 }

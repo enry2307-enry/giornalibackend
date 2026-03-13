@@ -3,7 +3,7 @@ import { AppError } from "../../../errors/AppError";
 export class CommentNotFound extends AppError {
   constructor() {
     super(
-      'Comment not found.',
+      'Comment not found. If this comment exists, you are not the author.',
       404,
       'COMMENT_NOT_FOUND'
     )
