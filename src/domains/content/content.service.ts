@@ -37,7 +37,7 @@ export abstract class BaseContentService<
    * @returns Il contenuto
    */
   protected async ensureOwnershipOfContent(userId: string, contentId: string): Promise<T>{
-    // "mossa" difensiva per evitare contenere inconsistenza di dati ( da errore se non lo trova )
+    // "mossa" difensiva per contenere inconsistenza di dati ( da errore se non lo trova )
     await authRepository.findById(userId);
 
     const publisher = await publisherRepository.findOneWhere({user_id: userId});
