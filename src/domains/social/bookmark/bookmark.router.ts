@@ -14,12 +14,12 @@ bookmarkRouter.use(requiresActiveUser);
  * Salvataggio di un contenuto
  */
 bookmarkRouter.post(
-  'posts/:id',
+  '/posts/:id',
   dtoMiddleware(SavePostToggleDTO), 
   bookmarkController.togglePostBookmark
 );
 bookmarkRouter.post(
-  'scroll-videos/:id',
+  '/scroll-videos/:id',
   dtoMiddleware(SaveScrollVideoToggleDTO),
   bookmarkController.toggleScrollVideoBookmark
 );
@@ -28,10 +28,10 @@ bookmarkRouter.post(
  * Attivazione/Disattivazione notifiche
  */
 bookmarkRouter.post(
-  'posts/notify/:id',
+  '/posts/notify/:id',
   bookmarkController.togglePostNotification
 );
 bookmarkRouter.post(
-  'scroll-videos/notify/:id',
+  '/scroll-videos/notify/:id',
   bookmarkController.toggleScrollVideoNotification
 );

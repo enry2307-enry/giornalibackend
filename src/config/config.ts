@@ -7,6 +7,7 @@ interface Config {
   nodeEnv: string;
   supabaseUrl: string;
   supabaseKey: string;
+  useRedis: string;
   jwtAccessSecret: string;
   jwtRefreshSecret: string;
   cloudflareAccountId: string;
@@ -27,6 +28,7 @@ const config: Config = {
   nodeEnv: process.env['NODE_ENV'] || 'development',
   supabaseUrl: requireEnv('SUPABASE_URL'),
   supabaseKey: requireEnv('SUPABASE_KEY'),
+  useRedis: requireEnv('USE_REDI'),
   jwtAccessSecret: requireEnv('JWT_ACCESS_SECRET'),
   jwtRefreshSecret: requireEnv('JWT_REFRESH_SECRET'),
   cloudflareAccountId: requireEnv('CLOUDFLARE_ACCOUNT_ID'),

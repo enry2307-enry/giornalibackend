@@ -40,7 +40,7 @@ app.use(express.json());
 app.use(cookieParser());
 // 4. Custom Security Middlewares (Redis-based)
 // La blacklist prima del rate limiter per risparmiare risorse
-if (process.env.NODE_ENV === 'production' || process.env.USE_REDIS === 'true') {
+if (config.nodeEnv === 'production' || config.useRedis === 'true') {
   app.use(blacklistMiddleware);
   app.use(rateLimiterMiddleware);
 }
@@ -52,6 +52,7 @@ app.use('/api/v1/scroll-video', scrollVideoRouter);
 app.use('/api/v1/storage', storageRouter);
 app.use('/api/v1/categories', categoryRouter);
 app.use('/api/v1/social/bookmarks', bookmarkRouter);
+app.use('/api/v1/social/like', )
 
 // 6. Global error handler
 app.use(errorHandler);
