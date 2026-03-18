@@ -1,6 +1,7 @@
 import Redis from 'ioredis';
+import config from '../../config/config';
 
-const shouldConnect = process.env.NODE_ENV === 'production' || process.env.USE_REDIS === 'true';
+const shouldConnect = config.nodeEnv === 'production' || config.useRedis === 'true';
 
 // Creiamo l'istanza solo se necessario, altrimenti esportiamo un oggetto dummy o null
 const redisClient = shouldConnect 
