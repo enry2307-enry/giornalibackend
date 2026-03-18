@@ -12,12 +12,12 @@
 import { QueryResult } from "../../../core/database/baseRepository";
 import { ForbiddenError } from "../../../errors/AppError";
 import { authRepository } from "../../auth/auth.repository";
-import { CommentCreateDTO, CommentEditDTO} from "./comment.dto";
+import { CommentCreateDTO, CommentEditDTO } from "./comment.dto";
 import { CommentNotFound, InvalidEdit } from "./comment.errors";
 import { commentOnPostRepository, commentOnScrollVideoRepository, GenericCommentRepository } from "./comment.repository";
-import { Comment, CommentInsert, CommentUpdate, CommentStatus, PublicComment } from "./comment.types";
+import { Comment, CommentStatus, EntityType, PublicComment } from "./comment.types";
 
-class BaseCommentService {
+export class BaseCommentService {
   
   protected repository: GenericCommentRepository;
   
@@ -25,26 +25,25 @@ class BaseCommentService {
     this.repository = repository;
   }
 
-  async create(userId: string, dto: CommentCreateDTO): Promise<Comment> {
+  async create(userId: string, entity_id: string, dto: CommentCreateDTO): Promise<Comment> {
     // Difesa contro dati inconsistenti
     // Lancia 404 se user non è trovato
     await authRepository.findById(userId);
 
     return await this.repository.create({
       user_id: userId,
+      entity_id,
       ...dto
     });
   }
 
-  async update(userId: string, dto: CommentEditDTO): Promise<Comment> {
+  async update(userId: string, commentId: string, dto: CommentEditDTO): Promise<Comment> {
     // Difesa contro dati inconsistenti
     // Lancia 404 se user non è trovato
     await authRepository.findById(userId);
 
-    const { comment_id } = dto;
-
     // con questa query verifichiamo sia l'esistenza del commento che l'appartenenza all'user.
-    const comment = await this.repository.findOneWhere({ id: comment_id, user_id: userId});
+    const comment = await this.repository.findOneWhere({ id: commentId, user_id: userId});
     if(!comment) throw new CommentNotFound();
     
     // Controlla se effettivamente c'è un update
@@ -85,7 +84,7 @@ class BaseCommentService {
 
   async getComments(
     entityId: string,
-    entityType: 'post' | 'scrollvideo',
+    entityType: EntityType,
     options?: {
       cursor?: string | undefined
     }

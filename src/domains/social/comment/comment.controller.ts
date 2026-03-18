@@ -1,109 +1,72 @@
 import { Request, Response } from "express";
-import { catchAsync } from "../../../utils/catchAsync";
+import { EntityType } from "./comment.types";
+import { BaseCommentService, commentOnPostService, commentOnScrollVideoService } from "./comment.service";
+import { MissingRequiredURLParam, ValidationError } from "../../../errors/AppError";
 import { toResponse } from "../../../core/utils/objects.utils";
-import { commentOnPostService, commentOnScrollVideoService } from "./comment.service";
-import { ValidationError } from "../../../errors/AppError";
+
+const serviceMapper: Record<EntityType, BaseCommentService> = {
+  [EntityType.POST]: commentOnPostService,
+  [EntityType.SCROLLVIDEO]: commentOnScrollVideoService
+};
+
 
 export const commentController = {
-  createCommentOnPost: catchAsync(async (req: Request, res: Response) => {
-    const comment = await commentOnPostService.create(req.user.id, req.body);
 
-    res.status(201).json(toResponse({
-      data: comment
-    }))
-  }),
+  create: (type: EntityType) => {
+    return async (req: Request, res: Response) => {
+      const { contentId } = req.params;
+      if(!contentId) throw new MissingRequiredURLParam('contentId');
 
-  createCommentOnScrollVideo: catchAsync(async (req: Request, res: Response) => {
-    const comment = await commentOnScrollVideoService.create(req.user.id, req.body);
+      const comment = await serviceMapper[type].create(req.user.id, contentId, req.body);
 
-    res.status(201).json(toResponse({
-      data: comment
-    }))
-  }),
+      res.status(201).json(toResponse({
+        data: comment
+      }));
+    }
+  },
 
-  updateCommentOnPost: catchAsync(async (req: Request, res: Response) => {
-    const comment = await commentOnPostService.update(req.user.id, req.body);
+  update: (type: EntityType) => {
+    return async (req: Request, res: Response) => {
+      const { commentId } = req.params;
+      if(!commentId) throw new MissingRequiredURLParam('contentId');
 
-    res.status(200).json(toResponse({
-      data: comment
-    }))
-  }),
+      const comment = await serviceMapper[type].update(req.user.id, commentId, req.body);
 
-  updateCommentOnScrollVideo: catchAsync(async (req: Request, res: Response) => {
-    const comment = await commentOnScrollVideoService.update(req.user.id, req.body);
+      res.status(201).json(toResponse({
+        data: comment
+      }));
+    }
+  },
 
-    res.status(200).json(toResponse({
-      data: comment
-    }))
-  }),
+  getCommentReplies: (type: EntityType) => {
+    return async (req: Request, res: Response) => {
+      const { parentId } = req.params;
+      if(!parentId) throw new MissingRequiredURLParam('parentId');
 
-  /**
-   * Ritorna la lista di commenti che hanno risposto ad un commento specifico.
-   * Sulla tabella POST
-   */
-  getPostCommentReplies: catchAsync(async (req: Request, res: Response) => {
-    const { id } = req.params;
-    if(!id) throw new ValidationError('Missing required param id.');
+      const cursor = req.query['cursor'] as string | undefined;
 
-    // naturalmente va validato e sanitizzato
-    const cursor = req.query['cursor'] as string | undefined;
+      const { data, meta } = await serviceMapper[type].getRepliesOfComment(parentId, { cursor });
 
-    const { data, meta } = await commentOnPostService.getRepliesOfComment(
-      id, 
-      {cursor}
-    );
+      res.status(200).json(toResponse({
+        data, 
+        meta
+      }));
+    }
+  },
 
-    res.status(200).json(toResponse({
-      data,
-      meta
-    }));
-  }),
+  getComments: (type: EntityType) => {
+    return async (req: Request, res: Response) => {
+      const { contentId } = req.params;
+      if(!contentId) throw new MissingRequiredURLParam('contentId');
 
-  /**
-   * Ritorna la lista di commenti che hanno risposto ad un commento specifico.
-   * Sulla tabella SCROLLVIDEO
-   */
-  getScrollVideoCommentReplies: catchAsync(async (req: Request, res: Response) => {
-    const { id } = req.params;
-    if(!id) throw new ValidationError('Missing required param id.');
+      const cursor = req.query['cursor'] as string | undefined;
 
-    // naturalmente va validato e sanitizzato
-    const cursor = req.query['cursor'] as string | undefined;
+      const { data, meta } = await serviceMapper[type].getComments(contentId, type, { cursor });
 
-    const { data, meta } = await commentOnScrollVideoService.getRepliesOfComment(id, {cursor});
-
-    res.status(200).json(toResponse({
-      data,
-      meta
-    }));
-  }),
-
-  // qui manca di prendere i commenti di un post e scrollvideo specifico
-  getPostComments: catchAsync(async (req: Request, res: Response) => {
-    const { id } = req.params;
-    if(!id) throw new ValidationError('Missing required param id.');
-
-    const cursor = req.query['cursor'] as string | undefined;
-
-    const { data, meta } = await commentOnPostService.getComments(id, 'post', {cursor});
-
-    res.status(200).json(toResponse({
-      data,
-      meta
-    }));
-  }),
-
-  getScrollVideoComments: catchAsync(async (req: Request, res: Response) => {
-    const { id } = req.params;
-    if(!id) throw new ValidationError('Missing required param id.');
-
-    const cursor = req.query['cursor'] as string | undefined;
-
-    const { data, meta } = await commentOnScrollVideoService.getComments(id, 'scrollvideo', {cursor});
-
-    res.status(200).json(toResponse({
-      data,
-      meta
-    }));
-  })
+      res.status(200).json(toResponse({
+        data,
+        meta
+      }));
+    }
+  }
 }

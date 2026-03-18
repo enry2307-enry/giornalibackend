@@ -52,3 +52,9 @@ export class NotImplemented extends AppError {
     super(message, 501, 'NOT_IMPLEMENTED');
   }
 }
+
+export class MissingRequiredURLParam extends AppError {
+  constructor(paramName: string) {
+    super(`Missing required URL param "${paramName}".`, 400, 'MISSING_REQUIRED_URL_PARAM');
+  }
+}

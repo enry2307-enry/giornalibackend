@@ -53,3 +53,8 @@ export interface PublicComment {
     type: string;
   }
 }
+
+export enum EntityType {
+  POST = 'post',
+  SCROLLVIDEO = 'scrollvideo'
+}

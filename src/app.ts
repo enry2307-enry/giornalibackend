@@ -20,6 +20,9 @@ import { scrollVideoRouter } from './domains/content/scroll-video/scroll-video.r
 import { storageRouter } from './domains/storage/storage.router';
 import { categoryRouter } from './domains/content/category/category.router';
 import { bookmarkRouter } from './domains/social/bookmark/bookmark.router';
+import { requiresAuth } from './middleware/auth.middleware';
+import { requiresActiveUser } from './middleware/activeUser.middleware';
+import { likeRouter } from './domains/social/like/like.router';
 
 const app = express();
 
@@ -46,13 +49,13 @@ if (config.nodeEnv === 'production' || config.useRedis === 'true') {
 }
 // 5. Routes
 app.use('/api/v1/auth', authRouter);
-app.use('/api/v1/profiles', profileRouter);
-app.use('/api/v1/post', postRouter);
-app.use('/api/v1/scroll-video', scrollVideoRouter);
-app.use('/api/v1/storage', storageRouter);
-app.use('/api/v1/categories', categoryRouter);
-app.use('/api/v1/social/bookmarks', bookmarkRouter);
-app.use('/api/v1/social/like', )
+app.use('/api/v1/profiles', requiresAuth, requiresActiveUser, profileRouter);
+app.use('/api/v1/post', requiresAuth, requiresActiveUser, postRouter);
+app.use('/api/v1/scroll-video', requiresAuth, requiresActiveUser, scrollVideoRouter);
+app.use('/api/v1/storage', requiresAuth, requiresActiveUser, storageRouter);
+app.use('/api/v1/categories', requiresAuth, requiresActiveUser, categoryRouter);
+app.use('/api/v1/social/bookmarks', requiresAuth, requiresActiveUser, bookmarkRouter);
+app.use('/api/v1/social/like', requiresAuth, requiresActiveUser, likeRouter);
 
 // 6. Global error handler
 app.use(errorHandler);

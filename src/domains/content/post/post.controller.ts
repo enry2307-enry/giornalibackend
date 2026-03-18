@@ -5,7 +5,7 @@ import { catchAsync } from "../../../utils/catchAsync";
 import { AppError, ValidationError } from "../../../errors/AppError";
 
 export const postController = {
-  createPost: catchAsync(async (req: Request, res: Response) => {
+  createPost: async (req: Request, res: Response) => {
     const files = req.files as Express.Multer.File[];
     const { description } = req.body;
 
@@ -21,9 +21,9 @@ export const postController = {
       message: "Post created successfully",
       data: { content }
     });
-  }),
+  },
 
-  updatePost: catchAsync(async (req: Request, res: Response) => {
+  updatePost: async (req: Request, res: Response) => {
     const { id } = req.params;
     if(!id) throw new ValidationError('Missing required param id.');
 
@@ -33,9 +33,9 @@ export const postController = {
       status: "success",
       data: { post },
     });
-  }),
+  },
 
-  getById: catchAsync(async (req: Request, res: Response) => {
+  getById: async (req: Request, res: Response) => {
     const { id } = req.params;
     if(!id) throw new ValidationError('Missing required param id.');
 
@@ -45,9 +45,9 @@ export const postController = {
       status: "success",
       data: { post },
     });
-  }),
+  },
 
-  deletePost: catchAsync(async (req: Request, res: Response) => {
+  deletePost: async (req: Request, res: Response) => {
     const { id } = req.params;
     if(!id) throw new ValidationError('Missing required param id.');
 
@@ -56,5 +56,5 @@ export const postController = {
     res.status(204).json({
       status: "success"
     });
-  })
+  }
 }

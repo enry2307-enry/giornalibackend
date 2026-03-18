@@ -7,10 +7,6 @@ export class MediaRepository extends BaseRepository<
   MediaInsert
 > {
   protected tableName: string = 'media';
-
-  async findByStorageKey(key: string): Promise<Media | null> {
-    return this.findOneWhere({ storage_key: key });
-  }
 }
 
 export const mediaRepository = new MediaRepository();
