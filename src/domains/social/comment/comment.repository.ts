@@ -1,7 +1,7 @@
 import { BaseRepository, QueryResult } from "../../../core/database/baseRepository";
 import { Comment, CommentInsert, CommentUpdate, PublicComment } from "./comment.types";
 import supabase from "../../../core/database/supabase";
-import { FindOptions } from "../../../core/types/repository.types";
+import { FindOptions } from "../../../core/database/repository.types";
 
 export class GenericCommentRepository extends BaseRepository<
   Comment,

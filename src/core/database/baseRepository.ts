@@ -1,6 +1,6 @@
 // src/core/database/BaseRepository.ts
 import supabase from './supabase';
-import { RepositoryError, EntityNotFoundError, FindOptions, QueryOptions } from '../types/repository.types';
+import { RepositoryError, EntityNotFoundError, FindOptions, QueryOptions } from './repository.types';
 
 export interface QueryResult<T> {
   data: T;
