@@ -35,8 +35,8 @@
 
 ### Clone the repo
 In your terminal run:
-1. `git clone https://github.com/Giornali/backend.git`
-2. `cd giornali-backend`
+1. `git clone https://github.com/enry2307-enry/giornalibackend`
+2. `cd giornalibackend`
 
 You can now install dependencies
 
